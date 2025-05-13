@@ -1,0 +1,1500 @@
+/* Add this at the top of your CSS file */
+@font-face {
+    font-family: 'CustomFont';
+    src: url('./fonts/font.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Base scaling variables */
+:root {
+    --base-scale: clamp(0.8, 1vw, 1.2);
+    --container-width: clamp(300px, 90vw, 1200px);
+    --sidebar-width: clamp(180px, 20vw, 250px);
+    --component-padding: calc(10px * var(--base-scale));
+    --border-width: calc(3px * var(--base-scale));
+}
+
+/* Color Variables */
+:root {
+    --primary-color: #ff6b6b;
+    --secondary-color: #4ecdc4;
+    --background-color: #f7f7f7;
+    --text-color: #333;
+    --border-color: #ddd;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --container-bg: #fff;
+    --hover-color: #ff8e8e;
+    --timer-bg: #fff;
+}
+
+/* Theme Variables */
+:root {
+    --container-bg: #fff;
+    --hover-color: #ff8e8e;
+    --timer-bg: #fff;
+    --timer-text: #333;
+    --progress-bg: #eee;
+    --progress-fill: #4ecdc4;
+    --task-bg: #fff;
+    --task-border: #eee;
+    --badge-bg: #fff;
+    --badge-border: #ddd;
+    --transition-speed: 0.3s;
+}
+
+/* Sunset Theme */
+[data-theme="sunset"] {
+    --primary-color: #ff7e5f;
+    --secondary-color: #feb47b;
+    --background-color: #fff5e6;
+    --text-color: #4a4a4a;
+    --container-bg: #fff;
+    --border-color: #ffd6b3;
+    --shadow-color: rgba(255, 126, 95, 0.1);
+    --hover-color: #ff9e7f;
+    --timer-bg: #fff;
+    --timer-text: #4a4a4a;
+    --progress-bg: #ffe6d6;
+    --progress-fill: #ff7e5f;
+    --task-bg: #fff;
+    --task-border: #ffd6b3;
+    --badge-bg: #fff;
+    --badge-border: #ffd6b3;
+}
+
+/* Ocean Theme */
+[data-theme="ocean"] {
+    --primary-color: #4facfe;
+    --secondary-color: #00f2fe;
+    --background-color: #e6f7ff;
+    --text-color: #2c3e50;
+    --container-bg: #fff;
+    --border-color: #b3e0ff;
+    --shadow-color: rgba(79, 172, 254, 0.1);
+    --hover-color: #6fbafe;
+    --timer-bg: #fff;
+    --timer-text: #2c3e50;
+    --progress-bg: #e6f7ff;
+    --progress-fill: #4facfe;
+    --task-bg: #fff;
+    --task-border: #b3e0ff;
+    --badge-bg: #fff;
+    --badge-border: #b3e0ff;
+}
+
+/* Forest Theme */
+[data-theme="forest"] {
+    --primary-color: #2ecc71;
+    --secondary-color: #27ae60;
+    --background-color: #e8f5e9;
+    --text-color: #2c3e50;
+    --container-bg: #fff;
+    --border-color: #c8e6c9;
+    --shadow-color: rgba(46, 204, 113, 0.1);
+    --hover-color: #4cd964;
+    --timer-bg: #fff;
+    --timer-text: #2c3e50;
+    --progress-bg: #e8f5e9;
+    --progress-fill: #2ecc71;
+    --task-bg: #fff;
+    --task-border: #c8e6c9;
+    --badge-bg: #fff;
+    --badge-border: #c8e6c9;
+}
+
+/* Dark Mode Theme */
+[data-theme="dark"] {
+    --primary-color: #ff6b6b;
+    --secondary-color: #4ecdc4;
+    --background-color: #1a1a1a;
+    --text-color: #f0f0f0;
+    --container-bg: #2d2d2d;
+    --border-color: #404040;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --hover-color: #ff8e8e;
+    --timer-bg: #2d2d2d;
+    --timer-text: #f0f0f0;
+    --progress-bg: #404040;
+    --progress-fill: #4ecdc4;
+    --task-bg: #2d2d2d;
+    --task-border: #404040;
+    --badge-bg: #2d2d2d;
+    --badge-border: #404040;
+}
+
+/* Theme Transitions */
+body, .container, .timer, .checklist-container, .pokemon-info-container, 
+.sliding-container, .badges-grid, .badge-icon, .task-item, button {
+    transition: background-color 0.3s ease,
+                color 0.3s ease,
+                border-color 0.3s ease,
+                box-shadow 0.3s ease;
+}
+
+/* Theme Switcher */
+.theme-switcher {
+    display: none;
+}
+
+/* Add/update these styles in style.css */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevents scrolling */
+    height: 100vh; /* Full viewport height */
+    width: 100vw; /* Full viewport width */
+}
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0; /* Remove padding */
+    background-color: #f4f4f4;
+    transition: background-color 0.3s ease;
+    gap: 40px;
+    position: fixed; /* Alternative approach to prevent mobile bouncing */
+    touch-action: none; /* Prevents pull-to-refresh on mobile */
+    font-size: 16px; /* Base font size */
+}
+
+/* Main container */
+.container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    max-width: 90vw;
+    width: 100%;
+    gap: 2vw;
+    padding: 1vw;
+    height: calc(100vh - 120px); /* Account for logo space */
+    margin-top: min(100px, 10vh); /* Space for logo */
+    margin-left: max(260px, 20vw); /* Adjust main container to account for sidebar */
+}
+
+/* Header and timer section */
+.header {
+    width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sprite {
+    width: min(300px, 25vw);
+    height: min(300px, 25vw);
+    image-rendering: pixelated;
+    transition: all 0.3s ease-in-out;
+}
+
+.timer {
+    width: min(400px, 80vw); /* Scale with viewport width */
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    position: relative;
+    border: 4px solid #000;
+    border-radius: 2px;
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff,
+        0 0 10px rgba(0, 0, 0, 0.3); /* Added outer shadow */
+    transition: background-color 0.3s ease, all 0.3s ease-in-out;
+}
+
+.timer::before {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    background: #000;
+    border-radius: 2px;
+}
+
+.dark-mode .timer {
+    background-color: #444;
+    border: 4px solid #000; /* Changed back to black */
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666,
+        0 0 15px rgba(0, 0, 0, 0.4); /* Adjusted shadow */
+    color: #f4f4f4;
+}
+
+.dark-mode .timer::before {
+    background: #000; /* Kept black */
+}
+
+.time {
+    font-size: 42px; /* Reduced from 48px */
+    margin-bottom: 20px;
+    color: #333;
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.03);
+    padding: 10px;
+    border-radius: 10px;
+    margin: 15px 0;
+}
+
+.time span {
+    font-size: min(48px, 4vw);
+    color: inherit;
+}
+
+/* Remove the .time input styles since we're not using inputs anymore */
+
+button {
+    padding: max(6px, 0.5vw) max(12px, 1vw); /* Slightly reduced padding */
+    font-size: max(12px, 0.9vw); /* Reduced from 16px */
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, all 0.3s ease-in-out;
+    background-color: #f0f0f0;
+    transform: translateY(0);
+    font-family: 'CustomFont', 'Courier New', monospace;
+}
+
+button:hover {
+    background-color: #ddd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Increased shadow */
+}
+
+button:active {
+    background-color: #ccc;
+}
+
+.dark-mode {
+    background-color: #333;
+}
+
+.dark-mode button {
+    background-color: #555;
+    color: #f4f4f4;
+}
+
+.dark-mode button:hover {
+    background-color: #666;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Darker shadow for contrast */
+}
+
+.dark-mode button:active {
+    background-color: #777;
+}
+
+.dark-mode input {
+    color: #f4f4f4;
+}
+
+.dark-mode .time,
+.dark-mode .time input,
+.dark-mode #seconds {
+    color: #f4f4f4;
+}
+
+.break-time {
+    border: 2px solid #4CAF50;
+}
+
+.break-time input {
+    color: #4CAF50;
+}
+
+.break-time #minutes,
+.break-time #seconds {
+    color: #4CAF50;
+}
+
+.dark-mode .break-time {
+    border: 2px solid #8BC34A;
+}
+
+.dark-mode .break-time input {
+    color: #8BC34A;
+}
+
+.dark-mode .break-time #minutes,
+.dark-mode .break-time #seconds {
+    color: #8BC34A;
+}
+
+#status {
+    font-size: 0.9rem; /* Reduced from 1rem */
+    margin-bottom: 10px;
+    transition: color 0.3s ease;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 15px;
+    background: rgba(0,0,0,0.05);
+    display: inline-block;
+    font-family: 'CustomFont', 'Courier New', monospace;
+}
+
+.break-time #status {
+    color: #4CAF50;
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.dark-mode .break-time #status {
+    color: #8BC34A;
+}
+
+.settings label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 0.9rem; /* Reduced from 16px */
+    color: #333;
+    font-family: 'CustomFont', 'Courier New', monospace;
+}
+
+.dark-mode .settings label {
+    color: #ccc;
+}
+
+.settings input {
+    width: 50px;
+    font-size: 0.9rem; /* Reduced from 16px */
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 4px; /* Slightly reduced padding */
+    margin-left: 10px;
+    font-family: 'CustomFont', 'Courier New', monospace;
+}
+
+.dark-mode .settings input {
+    border: 1px solid #555;
+    background-color: #333;
+    color: #ccc;
+}
+
+/* Add these styles to style.css */
+.logo {
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(200px, 30vw);
+    text-align: center;
+    z-index: 1000;
+}
+
+.logo-img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Add to style.css */
+/* Update HP bar container styles */
+.hp-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 15px auto; /* Changed from 15px 0 to center */
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    width: 90%; /* Added width constraint */
+    justify-content: center; /* Added to center contents */
+}
+
+.hp-label {
+    background: #313131;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px; /* Reduced from 14px */
+    font-family: 'CustomFont', 'Courier New', monospace;
+}
+
+.hp-bar-wrapper {
+    flex-grow: 1;
+    background: #313131;
+    padding: 3px;
+    border-radius: 4px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    max-width: 250px; /* Add max-width for better control */
+}
+
+.hp-bar {
+    background: #707070;
+    height: 12px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.hp-remaining {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #00ff00, #00dd00);
+    transition: width 1s linear, background-color 0.5s, all 0.3s ease-in-out;
+}
+
+/* HP color states */
+.hp-remaining.medium {
+    background: linear-gradient(to bottom, #ffff00, #dddd00);
+}
+
+.hp-remaining.low {
+    background: linear-gradient(to bottom, #ff0000, #dd0000);
+}
+
+/* Remove or hide the HP fraction */
+.hp-fraction {
+    display: none;
+}
+
+/* Dark mode adjustments */
+.dark-mode .hp-label {
+    background: #515151;
+}
+
+.dark-mode .hp-bar-wrapper {
+    background: #515151;
+}
+
+/* Make the layout more responsive for smaller screens */
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .header, .timer {
+        width: 100%;
+        max-width: none;
+    }
+
+    .sprite {
+        width: min(250px, 40vw);
+        height: min(250px, 40vw);
+    }
+
+    .sliding-container,
+    .pokemon-info-container,
+    .datetime-display,
+    .checklist-container,
+    .social-links-container {
+        width: min(200px, 30vw);
+        transform: translateX(calc(100% - 30px));
+    }
+
+    .sliding-container:hover,
+    .pokemon-info-container:hover,
+    .datetime-display:hover,
+    .checklist-container:hover,
+    .social-links-container:hover {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        margin-top: calc(60px * var(--base-scale));
+    }
+
+    .timer {
+        width: clamp(280px, 90vw, 400px);
+    }
+
+    .sliding-container,
+    .pokemon-info-container,
+    .datetime-display,
+    .checklist-container,
+    .social-links-container {
+        width: 80vw;
+        transform: translateX(calc(100% - 20px));
+    }
+
+    .sliding-container::before,
+    .pokemon-info-container::before {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 12px;
+    }
+
+    .container {
+        margin-top: calc(40px * var(--base-scale));
+    }
+
+    .timer {
+        padding: 10px;
+    }
+
+    .time {
+        font-size: 32px;
+    }
+
+    button {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .sliding-container,
+    .pokemon-info-container {
+        transform: translateX(calc(100% - 15px));
+    }
+}
+
+/* Add smoother transitions */
+.timer, .sprite, button, .hp-remaining {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover effects for buttons */
+button {
+    transform: translateY(0);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Add to style.css */
+.datetime-display {
+    position: fixed;
+    top: min(85px, 10vh);
+    left: max(20px, 2vw);
+    font-family: 'CustomFont', 'Courier New', monospace;
+    width: min(200px, 20vw);
+    text-align: center;
+    padding: 10px 20px;
+    z-index: 1000;
+    border: 4px solid #000;
+    border-radius: 2px;
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff,
+        0 0 10px rgba(0, 0, 0, 0.3);
+    background-color: white;
+    min-height: 80px; /* Ensure consistent height */
+    font-size: 0.8rem;
+}
+
+.datetime-display .time {
+    display: block;
+    font-size: 36px;
+    color: #333;
+    line-height: 1;
+    margin-bottom: 8px;
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+
+.datetime-display .date {
+    display: block;
+    font-size: 12px;
+    color: #333;
+    line-height: 1;
+}
+
+.dark-mode .datetime-display {
+    background-color: #444;
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666,
+        0 0 15px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .datetime-display .time,
+.dark-mode .datetime-display .date {
+    color: #f4f4f4;
+}
+
+.checklist-container {
+    position: fixed;
+    top: min(250px, 30vh); /* Increased spacing from datetime display */
+    left: max(20px, 2vw);
+    width: min(200px, 20vw); /* Match datetime display width */
+    text-align: center;
+    padding: 10px 20px;
+    z-index: 1000;
+    border: 4px solid #000;
+    border-radius: 2px;
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff,
+        0 0 10px rgba(0, 0, 0, 0.3);
+    background-color: white;
+    height: calc(100vh - min(400px, 45vh) - 40px); /* Match timer container bottom edge with 40px bottom margin */
+    overflow-y: auto; /* Enable scrolling for long lists */
+}
+
+.dark-mode .checklist-container {
+    background-color: #444;
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666,
+        0 0 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Task list styles */
+#tasks-list {
+    text-align: left;
+    margin-top: 10px;
+}
+
+.checklist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-family: 'CustomFont', 'Courier New', monospace;
+}
+
+.add-task-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 10px;
+    transition: transform 0.2s ease;
+}
+
+.add-task-btn:hover {
+    transform: scale(1.2);
+}
+
+.task-input-wrapper {
+    margin-bottom: 10px;
+}
+
+#task-input {
+    width: 100%;
+    padding: 5px;
+    font-family: 'CustomFont', 'Courier New', monospace;
+    border: 2px solid #000;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    font-family: 'CustomFont', 'Courier New', monospace;
+    animation: slideIn 0.3s ease-out;
+    transform-origin: left center;
+    opacity: 1;
+}
+
+.task-item.removing {
+    animation: slideOut 0.3s ease-in forwards;
+}
+
+.task-item.completing {
+    animation: checkTask 0.3s ease-in-out;
+}
+
+.task-checkbox {
+    margin-right: 8px;
+    transition: transform 0.2s ease;
+}
+
+.task-checkbox:checked {
+    transform: scale(1.1);
+}
+
+.task-text {
+    flex-grow: 1;
+    transition: opacity 0.3s ease, text-decoration 0.3s ease;
+}
+
+.task-completed .task-text {
+    text-decoration: line-through;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.task-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    padding: 4px;
+}
+
+.task-delete:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Task input animation */
+.task-input-wrapper {
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: height 0.3s ease-in-out;
+}
+
+.task-input-wrapper.hidden {
+    height: 0;
+    margin-bottom: 0;
+}
+
+#task-input {
+    width: 100%;
+    padding: 5px;
+    font-family: 'CustomFont', 'Courier New', monospace;
+    border: 2px solid #000;
+    transition: border-color 0.3s ease;
+}
+
+#task-input:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+/* Dark mode adjustments */
+.dark-mode #task-input:focus {
+    border-color: #8BC34A;
+}
+
+.dark-mode .checklist-container {
+    background-color: #444;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666,
+        0 0 15px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode #task-input {
+    background-color: #555;
+    color: #f4f4f4;
+    border-color: #222;
+}
+
+/* Add to style.css */
+.footer {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: #666;
+    text-align: center;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    max-width: min(400px, 90vw); /* Match login box width */
+}
+
+.footer .copyright {
+    font-size: 10px;
+    opacity: 0.7;
+}
+
+.dark-mode .footer {
+    color: #888;
+}
+
+/* Add these styles to style.css */
+/* Reset sliding containers base position */
+.sliding-container, .pokemon-info-container {
+    position: fixed;
+    width: min(250px, 25vw);
+    background-color: white;
+    z-index: 1000;
+    border: 4px solid #000;
+    border-radius: 2px;
+    padding: clamp(10px, 1.5vw, 15px);
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff,
+        0 0 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(calc(100% - 30px)); /* Show 30px of container */
+}
+
+/* Update hover state to use transform */
+.sliding-container:hover,
+.pokemon-info-container:hover {
+    transform: translateX(0);
+}
+
+/* Position containers */
+.sliding-container {
+    top: min(85px, 10vh);
+    right: 0;
+    min-height: min(240px, 30vh);
+    width: min(250px, 25vw);
+    background-color: white;
+    z-index: 1000;
+    border: 4px solid #000;
+    border-radius: 2px;
+    padding: clamp(10px, 1.5vw, 15px);
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff,
+        0 0 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(calc(100% - 30px));
+}
+
+.sliding-container::before {
+    content: 'BADGES';
+    position: absolute;
+    left: -45px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: 14px;
+    white-space: nowrap;
+    color: #000;
+    background-color: white;
+    padding: 6px 10px;
+    border: 3px solid #000;
+    border-radius: 2px;
+    box-shadow: 
+        inset -2px -2px 0 0 #a0a0a0,
+        inset 2px 2px 0 0 #ffffff;
+}
+
+.sliding-container:hover {
+    transform: translateX(0);
+}
+
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    gap: 15px;
+    padding: 15px;
+    justify-items: center;
+    align-items: center;
+}
+
+.badge-icon {
+    width: min(50px, 7vw);
+    height: min(50px, 7vw);
+    filter: grayscale(100%);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+    object-fit: contain;
+}
+
+.badge-icon.earned {
+    filter: grayscale(0);
+    opacity: 1;
+}
+
+.badge-wrapper:hover .badge-icon {
+    filter: grayscale(0);
+    opacity: 1;
+}
+
+.badge-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.badge-tooltip {
+    visibility: hidden;
+    position: absolute;
+    left: -140px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: white;
+    border: 3px solid #000;
+    border-radius: 2px;
+    padding: 8px;
+    width: 120px;
+    text-align: center;
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: max(10px, 0.8vw);
+    z-index: 1001;
+    box-shadow: 
+        inset -2px -2px 0 0 #a0a0a0,
+        inset 2px 2px 0 0 #ffffff;
+    line-height: 1.2;
+}
+
+.badge-wrapper:hover .badge-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Dark mode adjustments */
+.dark-mode .sliding-container {
+    background-color: #444;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666,
+        0 0 15px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .sliding-container::before {
+    background-color: #444;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -2px -2px 0 0 #333,
+        inset 2px 2px 0 0 #666;
+}
+
+.dark-mode .badge-tooltip {
+    background-color: #444;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -2px -2px 0 0 #333,
+        inset 2px 2px 0 0 #666;
+    border-color: #000;
+}
+
+.pokemon-info-container {
+    position: fixed;
+    top: min(380px, 45vh);
+    right: 0;
+    min-height: calc(100vh - min(460px, 55vh));
+    width: min(250px, 25vw);
+    background-color: white;
+    z-index: 1000;
+    border: 4px solid #000;
+    border-radius: 2px;
+    padding: clamp(10px, 1.5vw, 15px);
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff,
+        0 0 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(calc(100% - 30px));
+}
+
+.pokemon-info-container:hover {
+    transform: translateX(0);
+}
+
+.pokemon-info-container::before {
+    content: 'POKEDEX';
+    position: absolute;
+    left: -45px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: 14px;
+    white-space: nowrap;
+    color: #000;
+    background-color: white;
+    padding: 6px 10px;
+    border: 3px solid #000;
+    border-radius: 2px;
+    box-shadow: 
+        inset -2px -2px 0 0 #a0a0a0,
+        inset 2px 2px 0 0 #ffffff;
+}
+
+.pokemon-small-sprite {
+    width: min(96px, 8vw);
+    height: min(96px, 8vw);
+    margin: 0 auto;
+    display: block;
+    image-rendering: pixelated;
+}
+
+.pokemon-region {
+    text-align: center;
+    margin: 5px 0;
+    font-size: 12px;
+    font-family: 'CustomFont', 'Courier New', monospace;
+}
+
+.pokemon-info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.stat-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    font-size: max(10px, 0.8vw);
+    padding: 2px 0;
+}
+
+.pokemon-info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: max(10px, 0.8vw);
+}
+
+.pokemon-name {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.pokemon-type {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.pokemon-description {
+    margin-top: 15px;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.dark-mode .pokemon-info-container {
+    background-color: #444;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666,
+        0 0 15px rgba(0, 0, 0, 0.4);
+}
+
+.dark-mode .pokemon-info-container::before {
+    background-color: #444;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -2px -2px 0 0 #333,
+        inset 2px 2px 0 0 #666;
+}
+
+/* Add these styles to match the datetime-display container */
+.social-links-container {
+    position: fixed;
+    bottom: 20px;
+    left: max(20px, 2vw);
+    font-family: 'CustomFont', 'Courier New', monospace;
+    width: min(200px, 20vw);
+    text-align: center;
+    padding: 10px 20px;
+    z-index: 1000;
+    border: 4px solid #000;
+    border-radius: 2px;
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff,
+        0 0 10px rgba(0, 0, 0, 0.3);
+    background-color: white;
+}
+
+.social-header {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.social-icon {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+
+/* Add this new style for mail icon */
+.social-icon[alt="Email"] {
+    width: 28px;  /* Slightly larger than other icons */
+    height: 28px;
+}
+
+.social-link:hover .social-icon {
+    transform: scale(1.2);
+}
+
+/* Dark mode support */
+.dark-mode .social-links-container {
+    background-color: #444;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666,
+        0 0 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Media query adjustments */
+@media (max-width: 1024px) {
+    .social-links-container {
+        width: min(160px, 16vw);
+    }
+}
+
+/* Mute Button */
+#mute-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+}
+
+/* Sound Icon */
+.sound-icon {
+    width: 24px;
+    height: 24px;
+    image-rendering: pixelated;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+#mute-btn:hover .sound-icon {
+    opacity: 1;
+}
+
+@media (max-width: 480px) {
+    body {
+        font-size: 12px; /* Further reduce base font size */
+    }
+
+    .badge-tooltip {
+        font-size: 0.7rem;
+    }
+}
+
+/* Remove evolution-related styles */
+.evolution-progress,
+.evolution-progress-bar,
+.evolution-progress-fill,
+.evolution-progress-text,
+.next-evolution,
+.sessions-remaining,
+.next-evolution-name,
+.evolution-animation {
+    display: none;
+}
+
+@keyframes evolutionFlash {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Responsive breakpoints with scaling adjustments */
+@media (max-width: 1366px) {
+    :root {
+        --base-scale: clamp(0.7, 0.9vw, 1);
+        --sidebar-width: clamp(160px, 18vw, 220px);
+    }
+}
+
+@media (max-width: 1024px) {
+    :root {
+        --base-scale: clamp(0.6, 0.8vw, 0.9);
+        --sidebar-width: clamp(140px, 16vw, 200px);
+    }
+    
+    .container {
+        margin-top: calc(60px * var(--base-scale));
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --base-scale: clamp(0.5, 0.7vw, 0.8);
+        --sidebar-width: clamp(120px, 80vw, 180px);
+    }
+
+    .container {
+        margin-top: calc(50px * var(--base-scale));
+    }
+
+    .timer {
+        width: clamp(280px, 90vw, 400px);
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --base-scale: clamp(0.4, 0.6vw, 0.7);
+    }
+
+    .container {
+        margin-top: calc(40px * var(--base-scale));
+    }
+}
+
+/* Height-based adjustments */
+@media (max-height: 800px) {
+    :root {
+        --base-scale: clamp(0.6, 0.8vh, 0.9);
+    }
+
+    .sliding-container {
+        height: clamp(180px, 28vh, 240px);
+    }
+
+    .pokemon-info-container {
+        height: clamp(300px, 50vh, 400px);
+    }
+
+    .logo {
+        top: 20px;
+    }
+    
+    .login-container {
+        top: 10px;
+    }
+    
+    .login-box {
+        min-height: 350px;
+        padding: 30px;
+    }
+    
+    .footer {
+        bottom: 20px;
+    }
+}
+
+@media (max-height: 600px) {
+    .logo {
+        top: 10px;
+    }
+    
+    .login-box {
+        min-height: 300px;
+        padding: 20px;
+    }
+    
+    .footer {
+        bottom: 10px;
+    }
+}
+
+/* Task animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+}
+
+@keyframes checkTask {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Login Container Styles */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    top: 20px; /* Offset to account for logo space */
+    width: 100vw; /* Ensure full width */
+    left: 30px; /* Move container 30px to the right */
+}
+
+.login-box {
+    width: min(400px, 90vw);
+    padding: 40px;
+    background-color: white;
+    border: 4px solid #000;
+    border-radius: 2px;
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    margin: 0 auto; /* Center horizontally */
+    position: relative;
+    top: 20px; /* Slight adjustment to balance with logo */
+    transform: translateX(0); /* Reset any transform */
+}
+
+.login-title {
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: 1.2rem;
+    margin: 0 0 40px 0;
+    text-align: center;
+    letter-spacing: 1px;
+    width: 100%;
+}
+
+#login-form {
+    width: 100%;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px;
+    margin: 0 auto;
+}
+
+.input-group {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-label {
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    letter-spacing: 1px;
+    margin: 0 0 8px 0;
+    text-align: center;
+    display: block;
+    width: 100%;
+}
+
+#login-form input {
+    width: 100%;
+    padding: 12px;
+    border: 4px solid #000;
+    border-radius: 2px;
+    background-color: #f0f0f0;
+    color: var(--text-color);
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: 0.9rem;
+    text-align: center;
+    letter-spacing: 1px;
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    margin: 15px 0 0 0;
+    background-color: white;
+    border: 4px solid #000;
+    border-radius: 2px;
+    color: var(--text-color);
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    letter-spacing: 1px;
+    box-shadow: 
+        inset -4px -4px 0 0 #a0a0a0,
+        inset 4px 4px 0 0 #ffffff;
+    box-sizing: border-box;
+}
+
+.register-link {
+    text-align: center;
+    margin: 30px 0 0 0;
+    padding: 0;
+    font-family: 'CustomFont', 'Courier New', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    width: 100%;
+}
+
+.register-link span {
+    color: var(--text-color);
+}
+
+.register-link a {
+    color: #ff6b6b;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+/* Dark mode adjustments */
+.dark-mode .login-box {
+    background-color: #444;
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666;
+}
+
+.dark-mode #login-form input {
+    background-color: #333;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -4px -4px 0 0 #222,
+        inset 4px 4px 0 0 #555;
+}
+
+.dark-mode .login-btn {
+    background-color: #444;
+    color: #f4f4f4;
+    box-shadow: 
+        inset -4px -4px 0 0 #333,
+        inset 4px 4px 0 0 #666;
+}
+
+.dark-mode .register-link span {
+    color: #f4f4f4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .login-container {
+        width: 100vw;
+        left: 0;
+    }
+}
+
+@media (max-height: 800px) {
+    .login-container {
+        top: 10px;
+    }
+}

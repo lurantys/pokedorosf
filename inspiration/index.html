@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/x-icon" href="./icons/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PokeDoro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="logo">
+        <img src="./icons/logo.png" alt="PokeDoro Logo" class="logo-img">
+    </div>
+    <div class="datetime-display">
+        <span id="datetime"></span>
+    </div>
+    <div class="sliding-container">
+        <div class="badges-grid">
+            <div class="badge-wrapper">
+                <img src="./icons/badge1.png" alt="Boulder Badge" class="badge-icon">
+                <div class="badge-tooltip">0/10 SESSIONS COMPLETE</div>
+            </div>
+            <div class="badge-wrapper">
+                <img src="./icons/badge2.png" alt="Cascade Badge" class="badge-icon">
+                <div class="badge-tooltip">0/20 SESSIONS COMPLETE</div>
+            </div>
+            <div class="badge-wrapper">
+                <img src="./icons/badge3.png" alt="Thunder Badge" class="badge-icon">
+                <div class="badge-tooltip">0/30 SESSIONS COMPLETE</div>
+            </div>
+            <div class="badge-wrapper">
+                <img src="./icons/badge4.png" alt="Rainbow Badge" class="badge-icon">
+                <div class="badge-tooltip">0/40 SESSIONS COMPLETE</div>
+            </div>
+            <div class="badge-wrapper">
+                <img src="./icons/badge5.png" alt="Soul Badge" class="badge-icon">
+                <div class="badge-tooltip">0/50 SESSIONS COMPLETE</div>
+            </div>
+            <div class="badge-wrapper">
+                <img src="./icons/badge6.png" alt="Marsh Badge" class="badge-icon">
+                <div class="badge-tooltip">0/60 SESSIONS COMPLETE</div>
+            </div>
+            <div class="badge-wrapper">
+                <img src="./icons/badge7.png" alt="Volcano Badge" class="badge-icon">
+                <div class="badge-tooltip">0/70 SESSIONS COMPLETE</div>
+            </div>
+            <div class="badge-wrapper">
+                <img src="./icons/badge8.png" alt="Earth Badge" class="badge-icon">
+                <div class="badge-tooltip">0/80 SESSIONS COMPLETE</div>
+            </div>
+        </div>
+    </div>
+    <div class="pokemon-info-container">
+        <div class="pokemon-info-content">
+            <img class="pokemon-small-sprite" alt="Pokemon Sprite">
+            <div class="pokemon-name"></div>
+            <div class="pokemon-type"></div>
+            <div class="pokemon-region">Region: Kanto</div>
+            <div class="pokemon-stats">
+                <div class="stat-row">
+                    <span class="stat-label">HP:</span>
+                    <span class="stat-value hp"></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">ATK:</span>
+                    <span class="stat-value attack"></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">DEF:</span>
+                    <span class="stat-value defense"></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">SPD:</span>
+                    <span class="stat-value speed"></span>
+                </div>
+            </div>
+            <div class="pokemon-description"></div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <img class="sprite" alt="Random Pokemon" src="">
+        </div>
+        <div class="timer">
+            <div id="status">Work Time</div>
+            <div class="hp-bar-container">
+                <div class="hp-label">HP</div>
+                <div class="hp-bar-wrapper">
+                    <div class="hp-bar">
+                        <div class="hp-remaining"></div>
+                    </div>
+                </div>
+                <button id="mute-btn" onclick="toggleMute()">
+                    <img src="./icons/sound-on.png" alt="Mute/Unmute" class="sound-icon">
+                </button>
+            </div>
+            <div class="time">
+                <span id="time-display">
+                    <span id="minutes">25</span>:<span id="seconds">00</span>
+                </span>
+            </div>
+            <button id="start-btn" onclick="startTimer()">Start</button>
+            <button onclick="resetTimer()">Reset</button>
+            <button onclick="toggleDarkMode()">Dark/Light Mode</button>
+            <div class="settings">
+                <label>Work Time: <input type="number" id="work-time" value="25" min="1" max="60"> minutes</label>
+                <label>Short Break: <input type="number" id="short-break-time" value="5" min="1" max="30"> minutes</label>
+                <label>Long Break: <input type="number" id="long-break-time" value="10" min="1" max="60"> minutes</label>
+            </div>
+        </div>
+        <div class="checklist-container">
+            <div class="checklist-header">
+                <span>Tasks</span>
+                <button class="add-task-btn" onclick="toggleTaskInput()">+</button>
+            </div>
+            <div class="task-input-wrapper" style="display: none;">
+                <input type="text" id="task-input" placeholder="New task...">
+            </div>
+            <div id="tasks-list"></div>
+        </div>
+        <div class="social-links-container">
+            <div class="social-header">Social Links</div>
+            <div class="social-icons">
+                <a href="https://github.com/lurantys" target="_blank" class="social-link">
+                    <img src="./icons/github.png" alt="GitHub" class="social-icon">
+                </a>
+                <a href="mailto:a.nhaila@aui.ma" class="social-link">
+                    <img src="./icons/mail.png" alt="Email" class="social-icon">
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <span>Developed by @lurantys</span>
+        <span class="copyright">© 2024</span>
+    </div>
+    <script src="script.js"></script>
+    <script src="pokemon-evolution.js"></script>
+    <audio id="levelUpSound" src="./audio/levelup.mp3" preload="auto"></audio>
+    <audio id="buttonSound" src="./audio/button.mp3" preload="auto"></audio>
+    <audio id="backgroundMusic" src="./audio/background.mp3" loop preload="auto"></audio>
+</body>
+</html>

@@ -1,0 +1,362 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'PokeFont';
+  src: url('../public/fonts/font.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+html, body, #root {
+  font-family: 'PokeFont', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure all elements inherit the custom font by default */
+* {
+  font-family: 'PokeFont', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif !important;
+}
+
+/* Retro Gaming Styles */
+.sprite {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+  transition: all 0.3s ease-in-out;
+}
+
+.timer {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.timer::before {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  background: #000;
+  z-index: 10;
+}
+
+.hp-bar-container {
+  display: flex;
+  align-items: center;
+}
+
+.hp-remaining {
+  transition: width 0.3s ease-out;
+}
+
+button {
+  transform: translateY(0);
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0px);
+}
+
+.time {
+  font-weight: bold;
+  text-shadow: 1px 1px 0px rgba(0,0,0,0.1);
+}
+
+.dark-mode .time {
+  text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Pokedex Styles */
+.pokedex-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 0;
+  width: 300px;
+  height: 420px;
+  max-height: calc(100vh - 10rem);
+  z-index: 40;
+  transition: all 0.3s ease-in-out;
+  transform: translateX(100%);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pokedex-container.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.pokedex-container.closed {
+  transform: translateX(calc(100% - 30px));
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Light Mode Pokedex Container */
+.pokedex-container:not(.dark) {
+  background-color: #f7fee7;
+  color: #374151;
+  border-left: 3px solid #3A5F0B;
+  border-top: 3px solid #3A5F0B;
+  border-bottom: 3px solid #3A5F0B;
+  box-shadow: inset -2px -2px 0 0 #8FBC8F,
+              inset 2px 2px 0 0 #FFFFFF;
+}
+
+/* Dark Mode Pokedex Container */
+.pokedex-container.dark {
+  background-color: #1f2937;
+  color: #d1d5db;
+  border-left: 3px solid #778899;
+  border-top: 3px solid #778899;
+  border-bottom: 3px solid #778899;
+  box-shadow: inset -2px -2px 0 0 #2F4F4F,
+              inset 2px 2px 0 0 #555555;
+}
+
+.pokedex-tab {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100px;
+  height: 30px;
+  transform-origin: 0 0;
+  transform: rotate(-90deg) translate(-50%, -50%);
+  padding: 0;
+  font-family: 'PokeFont', monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  border: 2px solid;
+}
+
+/* Light Mode Pokedex Tab */
+.pokedex-tab:not(.dark) {
+  background-color: #d9f99d;
+  color: #374151;
+  border-color: #3A5F0B;
+  box-shadow: 
+    inset -1px -1px 0 0 #8FBC8F,
+    inset 1px 1px 0 0 #FFFFFF;
+}
+
+/* Dark Mode Pokedex Tab */
+.pokedex-tab.dark {
+  background-color: #4b5563;
+  color: #e5e7eb;
+  border-color: #778899;
+  box-shadow: 
+    inset -1px -1px 0 0 #2F4F4F,
+    inset 1px 1px 0 0 #555555;
+}
+
+.pokedex-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pokedex-content > div {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pokedex-content .flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+.pokedex-content .flex-grow {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.pokedex-description-scroll-parent {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pokedex-description {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Scrollbar styling for Pokedex content */
+.pokedex-content::-webkit-scrollbar {
+  width: 6px;
+}
+.pokedex-content:not(.dark)::-webkit-scrollbar-track { background-color: #ecfccb; }
+.pokedex-content:not(.dark)::-webkit-scrollbar-thumb { background-color: #84cc16; }
+.pokedex-content.dark::-webkit-scrollbar-track { background-color: #374151; }
+.pokedex-content.dark::-webkit-scrollbar-thumb { background-color: #6b7280; }
+
+/* Ensure sprite in Pokedex is pixelated */
+.sprite {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* Scrollbar styling for Pokedex description (if it has its own scroll) */
+.pokedex-description-scroll-parent::-webkit-scrollbar {
+  width: 6px;
+}
+.pokedex-description-scroll-parent:not(.dark)::-webkit-scrollbar-track { background-color: #f7fee7; /* bg-lime-50 */ }
+.pokedex-description-scroll-parent:not(.dark)::-webkit-scrollbar-thumb { background-color: #84cc16; /* bg-lime-500 */ }
+.pokedex-description-scroll-parent.dark::-webkit-scrollbar-track { background-color: #1f2937; /* bg-gray-800 */ }
+.pokedex-description-scroll-parent.dark::-webkit-scrollbar-thumb { background-color: #4b5563; /* bg-gray-600 */ }
+
+.pokedex-footer {
+  width: 100%;
+  text-align: center;
+  font-size: 11px;
+  padding: 6px 0 4px 0;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-top: 1px solid #d1d5db;
+  letter-spacing: 0.5px;
+}
+.pokedex-container.dark .pokedex-footer {
+  background: #374151;
+  color: #9ca3af;
+  border-top: 1px solid #4b5563;
+}
+
+.global-footer {
+  width: 100vw;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  background: #e5e7eb;
+  color: #6b7280;
+  font-size: 12px;
+  text-align: center;
+  padding: 7px 0 5px 0;
+  border-top: 1px solid #d1d5db;
+  letter-spacing: 0.5px;
+  z-index: 100;
+}
+.dark-mode .global-footer {
+  background: #374151;
+  color: #9ca3af;
+  border-top: 1px solid #4b5563;
+}
+
+.badges-container {
+  position: fixed;
+  top: 10rem;
+  right: 0;
+  width: 300px;
+  height: 220px;
+  max-height: calc(100vh - 10rem);
+  z-index: 41;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(100%);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.badges-container.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.badges-container.closed {
+  transform: translateX(calc(100% - 30px));
+  opacity: 1;
+  pointer-events: all;
+}
+
+.badges-container:not(.dark) {
+  background-color: #f7fee7;
+  color: #374151;
+  border-left: 3px solid #3A5F0B;
+  border-bottom: 3px solid #3A5F0B;
+  border-top: 3px solid #3A5F0B;
+  box-shadow: inset -2px -2px 0 0 #8FBC8F,
+              inset 2px 2px 0 0 #FFFFFF;
+}
+
+.badges-container.dark {
+  background-color: #1f2937;
+  color: #d1d5db;
+  border-left: 3px solid #778899;
+  border-bottom: 3px solid #778899;
+  border-top: 3px solid #778899;
+  box-shadow: inset -2px -2px 0 0 #2F4F4F,
+              inset 2px 2px 0 0 #555555;
+}
+
+.badges-tab {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100px;
+  height: 30px;
+  transform-origin: 0 0;
+  transform: rotate(-90deg) translate(-50%, -50%);
+  padding: 0;
+  font-family: 'PokeFont', monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  border: 2px solid;
+}
+
+.badges-tab:not(.dark) {
+  background-color: #d9f99d;
+  color: #374151;
+  border-color: #3A5F0B;
+  box-shadow: 
+    inset -1px -1px 0 0 #8FBC8F,
+    inset 1px 1px 0 0 #FFFFFF;
+}
+
+.badges-tab.dark {
+  background-color: #4b5563;
+  color: #e5e7eb;
+  border-color: #778899;
+  box-shadow: 
+    inset -1px -1px 0 0 #2F4F4F,
+    inset 1px 1px 0 0 #555555;
+}
+
+.badges-content {
+  height: 100%;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
