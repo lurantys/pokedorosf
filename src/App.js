@@ -505,17 +505,12 @@ function App() {
             </div>
             
             <div className={`
-              time bg-gray-100 py-3 px-4 mb-4 text-center border border-gray-300
-              ${isDarkMode ? 'bg-gray-800 border-gray-600' : ''}
-              border-black
+              time bg-gray-100 py-3 px-4 mb-4 text-center
+              ${isDarkMode ? 'bg-gray-800' : ''}
             `}
             style={{
-              border: '2px solid #000',
               marginBottom: '1rem',
-              boxShadow: isDarkMode
-                ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-                : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
-              ...(isDarkMode ? { backgroundColor: '#1f2937', borderColor: '#000' } : { backgroundColor: '#f7fee7', borderColor: '#000' })
+              ...(isDarkMode ? { backgroundColor: '#1f2937' } : { backgroundColor: '#f7fee7' })
             }}>
               <span id="time-display" className="flex items-center justify-center gap-1 text-4xl">
                 <span id="minutes" className={`
