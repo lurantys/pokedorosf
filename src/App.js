@@ -51,12 +51,23 @@ function App() {
     setIsBadgesOpen(open => !open);
   }, []);
 
+  // Todo List state
+  const [todos, setTodos] = useState(() => {
+    const saved = localStorage.getItem('todos');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [todoInput, setTodoInput] = useState('');
+
   // Save settings whenever they change
   useEffect(() => {
     localStorage.setItem('workDuration', workDuration.toString());
     localStorage.setItem('shortBreakDuration', shortBreakDuration.toString());
     localStorage.setItem('longBreakDuration', longBreakDuration.toString());
   }, [workDuration, shortBreakDuration, longBreakDuration]);
+
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
 
   // Fetch Pokémon sprites on mount
   useEffect(() => {
@@ -209,42 +220,35 @@ function App() {
 
   // Fetch Pokémon details whenever currentPokemonInfo changes
   useEffect(() => {
-    console.log('currentPokemonInfo changed:', currentPokemonInfo);
+    if (!currentPokemonInfo || !currentPokemonInfo.name || !currentPokemonInfo.sprite) {
+      setPokedexData(null);
+      return;
+    }
     const fetchPokemonDetails = async () => {
       if (!currentPokemonInfo.name || currentPokemonInfo.name === 'Pokédoro' || currentPokemonInfo.name === 'Error') {
-        console.log('No valid Pokemon to fetch details for');
+        setPokedexData(null);
         return;
       }
-
       const pokemonName = currentPokemonInfo.name.toLowerCase();
-      console.log('Fetching details for:', pokemonName);
       try {
         setPokedexData(null); // Show loading state
         const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonName}`);
         if (!response.ok) throw new Error('Pokemon not found');
         const data = await response.json();
-        console.log('Received Pokemon data:', data);
-
         const speciesResponse = await fetch(data.species.url);
         if (!speciesResponse.ok) throw new Error('Species data not found');
         const speciesData = await speciesResponse.json();
-        console.log('Received species data:', speciesData);
-
         const descriptionEntry = speciesData.flavor_text_entries.find(entry => entry.language.name === 'en');
         const description = descriptionEntry ? descriptionEntry.flavor_text.replace(/[\f\n\r]/g, ' ').trim() : 'No description available.';
-
         const abilities = data.abilities.map(ability => 
           ability.ability.name.charAt(0).toUpperCase() + ability.ability.name.slice(1)
         );
-
         const moves = data.moves.slice(0, 4).map(move => 
           move.move.name.charAt(0).toUpperCase() + move.move.name.slice(1).replace('-', ' ')
         );
-
         const processedData = {
           name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
           types: data.types.map(t => t.type.name.charAt(0).toUpperCase() + t.type.name.slice(1)),
-
           abilities,
           moves,
           description,
@@ -252,11 +256,8 @@ function App() {
           weight: data.weight / 10,
           height: data.height / 10,
         };
-
-        console.log('Setting processed Pokemon data:', processedData);
         setPokedexData(processedData);
       } catch (error) {
-        console.error('Error fetching Pokemon:', error);
         setPokedexData({ 
           name: currentPokemonInfo.name, 
           error: "Could not load details.",
@@ -264,7 +265,6 @@ function App() {
         });
       }
     };
-
     fetchPokemonDetails();
   }, [currentPokemonInfo]);
 
@@ -306,6 +306,22 @@ function App() {
     const suffix = (j === 1 && k !== 11) ? "st" : (j === 2 && k !== 12) ? "nd" : (j === 3 && k !== 13) ? "rd" : "th";
     return `${day}${suffix} of ${month}`;
   }
+
+  const addTodo = (e) => {
+    e.preventDefault();
+    if (todoInput.trim()) {
+      setTodos([...todos, { text: todoInput.trim(), done: false }]);
+      setTodoInput('');
+    }
+  };
+
+  const toggleTodo = (idx) => {
+    setTodos(todos => todos.map((todo, i) => i === idx ? { ...todo, done: !todo.done } : todo));
+  };
+
+  const removeTodo = (idx) => {
+    setTodos(todos => todos.filter((_, i) => i !== idx));
+  };
 
   return (
     <div className={`
@@ -349,6 +365,83 @@ function App() {
           {formatDate(currentTime)}
         </div>
       </div>
+      {/* Floating To-Do List Container below the clock/date, left-aligned */}
+      <div
+        className={`
+          todo-list-fixed
+          ${isDarkMode ? 'text-[#d1d5db]' : 'text-[#374151]'}
+        `}
+        style={{
+          position: 'fixed',
+          top: '320px', // was 270px, now 320px for more space
+          left: '40px',
+          zIndex: 49,
+          width: '300px',
+          height: '420px',
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <div className={`
+          todo-list w-full h-full text-center border-4 border-black p-4 bg-opacity-100 flex flex-col
+          ${isDarkMode 
+            ? 'bg-[#1f2937] text-[#d1d5db]'
+            : 'bg-[#f7fee7] text-[#374151]'}
+        `}
+        style={{
+          boxShadow: isDarkMode
+            ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
+            : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          <div className="text-lg font-semibold mb-3">Tasks</div>
+          <form onSubmit={addTodo} className="flex gap-2 mb-4" style={{flexShrink: 0}}>
+            <input
+              type="text"
+              value={todoInput}
+              onChange={e => setTodoInput(e.target.value)}
+              placeholder="Add a task..."
+              className={`flex-1 px-2 py-1 border rounded ${isDarkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
+              maxLength={60}
+              style={{minWidth: 0}}
+            />
+            <button
+              type="submit"
+              className={`px-3 py-1 border-2 border-black font-medium transition-transform duration-200 transform hover:-translate-y-0.5 hover:shadow-md ${isDarkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}`}
+              style={{whiteSpace: 'nowrap'}}
+            >
+              Add
+            </button>
+          </form>
+          <ul className="flex-1 overflow-y-auto max-h-full text-left pr-1" style={{minHeight: 0}}>
+            {todos.length === 0 && <li className="text-gray-400 text-center">No tasks yet!</li>}
+            {todos.map((todo, idx) => (
+              <li key={idx} className="flex items-center justify-between py-1 group">
+                <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                  <input
+                    type="checkbox"
+                    checked={todo.done}
+                    onChange={() => toggleTodo(idx)}
+                    className="accent-green-500 w-4 h-4"
+                  />
+                  <span className={`flex-1 truncate ${todo.done ? 'line-through text-gray-400' : ''}`}>{todo.text}</span>
+                </label>
+                <button
+                  onClick={() => removeTodo(idx)}
+                  className="ml-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Remove"
+                  type="button"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
       {/* Badges sliding component at the top right */}
       <Badges
         isOpen={isBadgesOpen}
@@ -362,8 +455,8 @@ function App() {
         className="mx-auto block mb-8 w-64 h-auto absolute top-8"
         style={{ maxWidth: '80vw' }}
       />
-      
-      <div className="container flex flex-col md:flex-row items-center justify-center gap-6 max-w-3xl px-4 mt-32">
+      {/* Main content: timer, etc. */}
+      <div className="container flex flex-col md:flex-row items-center justify-center gap-6 max-w-3xl px-4 mt-8">
         <div className="header flex flex-col items-center">
           <img
             className="sprite w-64 h-64 object-contain"
@@ -372,220 +465,222 @@ function App() {
             style={{ imageRendering: 'pixelated' }}
           />
         </div>
-        
-        <div className={`
-          timer w-96 text-center relative border-4 border-black p-6 bg-opacity-100
-          ${isDarkMode 
-            ? 'bg-[#1f2937] text-[#d1d5db]'
-            : 'bg-[#f7fee7] text-[#374151]'}
-          ${isBreakTime 
-            ? (isDarkMode ? 'border-green-500' : 'border-green-500') 
-            : ''}
-        `}
-        style={{
-          boxShadow: isDarkMode
-            ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-            : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
-        }}>
+        {/* Timer Container */}
+        <div className="flex flex-col items-center gap-6">
           <div className={`
-            absolute w-2 h-2 bottom-0 right-0 
-            bg-black transform translate-x-1 translate-y-1
-          `}></div>
-          
-          <div id="status" className={`
-            text-lg font-semibold mb-3
-            ${isBreakTime ? 'text-green-500' : ''}
-          `}>
-            {status}
-          </div>
-          
-          {/* HP Bar */}
-          <div className="hp-bar-container mb-4 flex items-center">
-            <div className="hp-label font-bold mr-2">HP</div>
-            <div className="hp-bar-wrapper flex-1 border-2 border-black bg-gray-200 h-4">
-              <div 
-                className={`hp-remaining h-full ${hpPercentage > 50 ? 'bg-green-500' : hpPercentage > 20 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                style={{ width: `${hpPercentage}%` }}
-              ></div>
-            </div>
-          </div>
-          
-          <div className={`
-            time bg-gray-100 py-3 px-4 mb-4 text-center border border-gray-300
-            ${isDarkMode ? 'bg-gray-800 border-gray-600' : ''}
-          `}>
-            <span id="time-display" className="flex items-center justify-center gap-1 text-4xl">
-              <span id="minutes" className={`
-                font-mono font-bold
-                ${isBreakTime ? 'text-green-600' : ''}
-                ${isDarkMode && !isBreakTime ? 'text-gray-100' : (!isDarkMode && !isBreakTime ? 'text-gray-900' : '')}
-              `}>
-                {minutes.toString().padStart(2, '0')}
-              </span>
-              <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>:</span>
-              <span id="seconds" className={`
-                font-mono font-bold
-                ${isBreakTime ? 'text-green-600' : ''}
-                ${isDarkMode && !isBreakTime ? 'text-gray-100' : (!isDarkMode && !isBreakTime ? 'text-gray-900' : '')}
-              `}>
-                {seconds.toString().padStart(2, '0')}
-              </span>
-            </span>
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            <button 
-              id="start-btn" 
-              onClick={() => {playButtonSound();startTimer();}}
-              className={`
-                px-4 py-2 border-2 border-black font-medium transition-transform duration-200
-                transform hover:-translate-y-0.5 hover:shadow-md
-                ${isDarkMode 
-                  ? 'bg-gray-600 hover:bg-gray-500 text-white' 
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
-              `}
-            >
-              {isRunning ? 'Pause' : 'Start'}
-            </button>
+            timer w-96 text-center relative border-4 border-black p-6 bg-opacity-100
+            ${isDarkMode 
+              ? 'bg-[#1f2937] text-[#d1d5db]'
+              : 'bg-[#f7fee7] text-[#374151]'}
+            ${isBreakTime 
+              ? (isDarkMode ? 'border-green-500' : 'border-green-500') 
+              : ''}
+          `}
+          style={{
+            boxShadow: isDarkMode
+              ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
+              : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
+          }}>
+            <div className={`
+              absolute w-2 h-2 bottom-0 right-0 
+              bg-black transform translate-x-1 translate-y-1
+            `}></div>
             
-            <button 
-              onClick={() => {playButtonSound();resetTimer();}}
-              className={`
-                px-4 py-2 border-2 border-black font-medium transition-transform duration-200
-                transform hover:-translate-y-0.5 hover:shadow-md
-                ${isDarkMode 
-                  ? 'bg-gray-600 hover:bg-gray-500 text-white' 
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
-              `}
-            >
-              Reset
-            </button>
-            
-            <div className="flex gap-2">
-              <button 
-                onClick={() => {playButtonSound();toggleDarkMode();}}
-                className={`
-                  flex-1 px-4 py-2 border-2 border-black font-medium transition-transform duration-200
-                  transform hover:-translate-y-0.5 hover:shadow-md
-                  ${isDarkMode 
-                    ? 'bg-gray-600 hover:bg-gray-500 text-white' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
-                `}
-              >
-                Theme
-              </button>
-              
-              <button 
-                onClick={() => {playButtonSound();toggleSettings();}}
-                className={`
-                  flex-1 px-4 py-2 border-2 border-black font-medium transition-transform duration-200
-                  transform hover:-translate-y-0.5 hover:shadow-md
-                  ${isDarkMode 
-                    ? 'bg-gray-600 hover:bg-gray-500 text-white' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
-                `}
-              >
-                Settings
-              </button>
+            <div id="status" className={`
+              text-lg font-semibold mb-3
+              ${isBreakTime ? 'text-green-500' : ''}
+            `}>
+              {status}
             </div>
-          </div>
-          
-          <div
-            className={`
-              settings mt-4 pt-4 border-t-2 
-              ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}
-              settings-animated
+            
+            {/* HP Bar */}
+            <div className="hp-bar-container mb-4 flex items-center">
+              <div className="hp-label font-bold mr-2">HP</div>
+              <div className="hp-bar-wrapper flex-1 border-2 border-black bg-gray-200 h-4">
+                <div 
+                  className={`hp-remaining h-full ${hpPercentage > 50 ? 'bg-green-500' : hpPercentage > 20 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                  style={{ width: `${hpPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <div className={`
+              time bg-gray-100 py-3 px-4 mb-4 text-center border border-gray-300
+              ${isDarkMode ? 'bg-gray-800 border-gray-600' : ''}
+              border-black
             `}
             style={{
-              maxHeight: showSettings ? '300px' : '0',
-              opacity: showSettings ? 1 : 0,
-              overflow: 'hidden',
-              transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease'
-            }}
-            aria-hidden={!showSettings}
-          >
+              border: '2px solid #000',
+              marginBottom: '1rem',
+              ...(isDarkMode ? { backgroundColor: '#1f2937', borderColor: '#000' } : { backgroundColor: '#f7fee7', borderColor: '#000' })
+            }}>
+              <span id="time-display" className="flex items-center justify-center gap-1 text-4xl">
+                <span id="minutes" className={`
+                  font-mono font-bold
+                  ${isBreakTime ? 'text-green-600' : ''}
+                  ${isDarkMode && !isBreakTime ? 'text-gray-100' : (!isDarkMode && !isBreakTime ? 'text-gray-900' : '')}
+                `}>
+                  {minutes.toString().padStart(2, '0')}
+                </span>
+                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>:</span>
+                <span id="seconds" className={`
+                  font-mono font-bold
+                  ${isBreakTime ? 'text-green-600' : ''}
+                  ${isDarkMode && !isBreakTime ? 'text-gray-100' : (!isDarkMode && !isBreakTime ? 'text-gray-900' : '')}
+                `}>
+                  {seconds.toString().padStart(2, '0')}
+                </span>
+              </span>
+            </div>
+            {/* --- RESTORED BUTTONS AND SETTINGS --- */}
+            <div className="flex flex-col gap-2">
+              <button 
+                id="start-btn" 
+                onClick={() => {playButtonSound();startTimer();}}
+                className={`
+                  px-4 py-2 border-2 border-black font-medium transition-transform duration-200
+                  transform hover:-translate-y-0.5 hover:shadow-md
+                  ${isDarkMode 
+                    ? 'bg-gray-600 hover:bg-gray-500 text-white' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
+                `}
+              >
+                {isRunning ? 'Pause' : 'Start'}
+              </button>
+              <button 
+                onClick={() => {playButtonSound();resetTimer();}}
+                className={`
+                  px-4 py-2 border-2 border-black font-medium transition-transform duration-200
+                  transform hover:-translate-y-0.5 hover:shadow-md
+                  ${isDarkMode 
+                    ? 'bg-gray-600 hover:bg-gray-500 text-white' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
+                `}
+              >
+                Reset
+              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => {playButtonSound();toggleDarkMode();}}
+                  className={`
+                    flex-1 px-4 py-2 border-2 border-black font-medium transition-transform duration-200
+                    transform hover:-translate-y-0.5 hover:shadow-md
+                    ${isDarkMode 
+                      ? 'bg-gray-600 hover:bg-gray-500 text-white' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
+                  `}
+                >
+                  Theme
+                </button>
+                <button 
+                  onClick={() => {playButtonSound();toggleSettings();}}
+                  className={`
+                    flex-1 px-4 py-2 border-2 border-black font-medium transition-transform duration-200
+                    transform hover:-translate-y-0.5 hover:shadow-md
+                    ${isDarkMode 
+                      ? 'bg-gray-600 hover:bg-gray-500 text-white' 
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
+                  `}
+                >
+                  Settings
+                </button>
+              </div>
+            </div>
             <div
-              className="flex flex-col gap-2 text-left text-sm"
+              className={`
+                settings mt-4 pt-4 border-t-2 
+                ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}
+                settings-animated
+              `}
               style={{
-                pointerEvents: showSettings ? 'auto' : 'none',
+                maxHeight: showSettings ? '300px' : '0',
                 opacity: showSettings ? 1 : 0,
-                transition: 'opacity 0.3s'
+                overflow: 'hidden',
+                transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease'
               }}
+              aria-hidden={!showSettings}
             >
-              <label className="flex items-center justify-between">
-                <span>Work Time:</span>
-                <input 
-                  type="number" 
-                  value={workDuration}
-                  min="1" 
-                  max="60"
-                  onChange={(e) => {
-                    const newDuration = Number(e.target.value);
-                    setWorkDuration(newDuration);
-                    if (!isRunning && !isBreakTime) {
-                      setMinutes(newDuration);
-                      setTimeLeft(newDuration * 60);
-                    }
-                  }}
-                  className={`
-                    w-16 px-2 py-1 border 
-                    ${isDarkMode 
-                      ? 'bg-gray-800 border-gray-600 text-gray-100' 
-                      : 'bg-white border-gray-300 text-gray-900'}
-                  `}
-                /> min
-              </label>
-              <label className="flex items-center justify-between">
-                <span>Short Break:</span>
-                <input 
-                  type="number" 
-                  value={shortBreakDuration}
-                  min="1" 
-                  max="30"
-                  onChange={(e) => {
-                    const newDuration = Number(e.target.value);
-                    setShortBreakDuration(newDuration);
-                    if (!isRunning && isBreakTime) {
-                      setMinutes(newDuration);
-                      setTimeLeft(newDuration * 60);
-                    }
-                  }}
-                  className={`
-                    w-16 px-2 py-1 border 
-                    ${isDarkMode 
-                      ? 'bg-gray-800 border-gray-600 text-gray-100' 
-                      : 'bg-white border-gray-300 text-gray-900'}
-                  `}
-                /> min
-              </label>
-              <label className="flex items-center justify-between">
-                <span>Long Break:</span>
-                <input 
-                  type="number" 
-                  value={longBreakDuration}
-                  min="1" 
-                  max="60"
-                  onChange={(e) => {
-                    const newDuration = Number(e.target.value);
-                    setLongBreakDuration(newDuration);
-                  }}
-                  className={`
-                    w-16 px-2 py-1 border 
-                    ${isDarkMode 
-                      ? 'bg-gray-800 border-gray-600 text-gray-100' 
-                      : 'bg-white border-gray-300 text-gray-900'}
-                  `}
-                /> min
-              </label>
+              <div
+                className="flex flex-col gap-2 text-left text-sm"
+                style={{
+                  pointerEvents: showSettings ? 'auto' : 'none',
+                  opacity: showSettings ? 1 : 0,
+                  transition: 'opacity 0.3s'
+                }}
+              >
+                <label className="flex items-center justify-between">
+                  <span>Work Time:</span>
+                  <input 
+                    type="number" 
+                    value={workDuration}
+                    min="1" 
+                    max="60"
+                    onChange={(e) => {
+                      const newDuration = Number(e.target.value);
+                      setWorkDuration(newDuration);
+                      if (!isRunning && !isBreakTime) {
+                        setMinutes(newDuration);
+                        setTimeLeft(newDuration * 60);
+                      }
+                    }}
+                    className={`
+                      w-16 px-2 py-1 border 
+                      ${isDarkMode 
+                        ? 'bg-gray-800 border-gray-600 text-gray-100' 
+                        : 'bg-white border-gray-300 text-gray-900'}
+                    `}
+                  /> min
+                </label>
+                <label className="flex items-center justify-between">
+                  <span>Short Break:</span>
+                  <input 
+                    type="number" 
+                    value={shortBreakDuration}
+                    min="1" 
+                    max="30"
+                    onChange={(e) => {
+                      const newDuration = Number(e.target.value);
+                      setShortBreakDuration(newDuration);
+                      if (!isRunning && isBreakTime) {
+                        setMinutes(newDuration);
+                        setTimeLeft(newDuration * 60);
+                      }
+                    }}
+                    className={`
+                      w-16 px-2 py-1 border 
+                      ${isDarkMode 
+                        ? 'bg-gray-800 border-gray-600 text-gray-100' 
+                        : 'bg-white border-gray-300 text-gray-900'}
+                    `}
+                  /> min
+                </label>
+                <label className="flex items-center justify-between">
+                  <span>Long Break:</span>
+                  <input 
+                    type="number" 
+                    value={longBreakDuration}
+                    min="1" 
+                    max="60"
+                    onChange={(e) => {
+                      const newDuration = Number(e.target.value);
+                      setLongBreakDuration(newDuration);
+                    }}
+                    className={`
+                      w-16 px-2 py-1 border 
+                      ${isDarkMode 
+                        ? 'bg-gray-800 border-gray-600 text-gray-100' 
+                        : 'bg-white border-gray-300 text-gray-900'}
+                    `}
+                  /> min
+                </label>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
       <audio ref={levelUpSoundRef} src="/audio/levelup.mp3" preload="auto" />
       <audio ref={buttonSoundRef} src="/audio/button.mp3" preload="auto" />
       <audio ref={bgMusicRef} src="/audio/background.mp3" loop preload="auto" />
-
       {/* Render Pokedex only after sprite is loaded */}
       {currentPokemonInfo.sprite && (
         <Pokedex

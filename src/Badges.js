@@ -23,5 +23,4 @@ const Badges = ({ isOpen, toggleBadges, darkMode }) => {
     </div>
   );
 };
-
 export default Badges; 
