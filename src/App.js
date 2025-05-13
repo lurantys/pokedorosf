@@ -58,6 +58,12 @@ function App() {
   });
   const [todoInput, setTodoInput] = useState('');
 
+  // Track completed work sessions for badges
+  const [completedSessions, setCompletedSessions] = useState(() => {
+    const saved = localStorage.getItem('completedSessions');
+    return saved ? parseInt(saved) : 0;
+  });
+
   // Save settings whenever they change
   useEffect(() => {
     localStorage.setItem('workDuration', workDuration.toString());
@@ -68,6 +74,13 @@ function App() {
   useEffect(() => {
     localStorage.setItem('todos', JSON.stringify(todos));
   }, [todos]);
+
+  useEffect(() => {
+    localStorage.setItem('completedSessions', completedSessions.toString());
+  }, [completedSessions]);
+
+  // Calculate owned badges based on completed sessions
+  const ownedBadges = Array.from({length: 8}, (_, i) => i + 1).filter(badgeNum => completedSessions >= badgeNum * 10);
 
   // Fetch Pokémon sprites on mount
   useEffect(() => {
@@ -137,6 +150,7 @@ function App() {
       setStatus('Break Time');
       setTimeLeft(shortBreakDuration * 60);
       document.querySelector('.timer')?.classList.add('break-time');
+      setCompletedSessions(prev => prev + 1); // Only increment after work session
     } else {
       // Start work
       setStatus('Work Time');
@@ -447,6 +461,8 @@ function App() {
         isOpen={isBadgesOpen}
         toggleBadges={toggleBadges}
         darkMode={isDarkMode}
+        ownedBadges={ownedBadges}
+        completedSessions={completedSessions}
       />
       {/* Large centered logo at the top of the page */}
       <img 
