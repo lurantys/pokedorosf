@@ -36,3 +36,12 @@
     transform: rotate(360deg);
   }
 }
+
+/* Hide scrollbar for settings panel but keep scroll functionality */
+.settings-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+.settings-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

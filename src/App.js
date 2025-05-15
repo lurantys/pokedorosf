@@ -64,6 +64,17 @@ function App() {
     return saved ? parseInt(saved) : 0;
   });
 
+  // Add new state for sound controls
+  const [isMuted, setIsMuted] = useState(() => localStorage.getItem('isMuted') === 'true');
+  const [musicVolume, setMusicVolume] = useState(() => {
+    const saved = localStorage.getItem('musicVolume');
+    return saved ? parseFloat(saved) : 0.1;
+  });
+  const [effectsVolume, setEffectsVolume] = useState(() => {
+    const saved = localStorage.getItem('effectsVolume');
+    return saved ? parseFloat(saved) : 0.5;
+  });
+
   // Save settings whenever they change
   useEffect(() => {
     localStorage.setItem('workDuration', workDuration.toString());
@@ -202,28 +213,52 @@ function App() {
     setShowSettings(!showSettings);
   };
 
+  // Save sound settings whenever they change
+  useEffect(() => {
+    localStorage.setItem('isMuted', isMuted);
+    localStorage.setItem('musicVolume', musicVolume);
+    localStorage.setItem('effectsVolume', effectsVolume);
+  }, [isMuted, musicVolume, effectsVolume]);
+
   const playLevelUpSound = () => {
     const sound = levelUpSoundRef.current;
-    if (!sound) return;
+    if (!sound || isMuted) return;
     sound.currentTime = 0;
-    sound.volume = 0.5;
+    sound.volume = effectsVolume;
     sound.play().catch(() => {});
   };
 
   const playButtonSound = () => {
     const sound = buttonSoundRef.current;
-    if (!sound) return;
+    if (!sound || isMuted) return;
     sound.currentTime = 0;
-    sound.volume = 0.3;
+    sound.volume = effectsVolume;
     sound.play().catch(() => {});
   };
 
   const startBackgroundMusic = () => {
     const bgMusic = bgMusicRef.current;
     if (!bgMusic) return;
-    bgMusic.volume = 0.1;
-    bgMusic.play().catch(() => {});
+    bgMusic.volume = isMuted ? 0 : musicVolume;
+    if (!isMuted) {
+      bgMusic.play().catch(() => {});
+    } else {
+      bgMusic.pause();
+      bgMusic.currentTime = 0;
+    }
   };
+
+  // Update background music volume/mute on change
+  useEffect(() => {
+    const bgMusic = bgMusicRef.current;
+    if (bgMusic) {
+      bgMusic.volume = isMuted ? 0 : musicVolume;
+      if (isMuted) {
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+      }
+    }
+  }, [isMuted, musicVolume]);
 
   // Start background music on first click
   useEffect(() => {
@@ -635,11 +670,14 @@ function App() {
               aria-hidden={!showSettings}
             >
               <div
-                className="flex flex-col gap-2 text-left text-sm"
+                className="flex flex-col gap-2 text-left text-sm settings-scroll"
                 style={{
                   pointerEvents: showSettings ? 'auto' : 'none',
                   opacity: showSettings ? 1 : 0,
-                  transition: 'opacity 0.3s'
+                  transition: 'opacity 0.3s',
+                  maxHeight: '220px',
+                  overflowY: 'auto',
+                  paddingRight: '8px',
                 }}
               >
                 <label className="flex items-center justify-between">
@@ -707,6 +745,43 @@ function App() {
                     `}
                   /> min
                 </label>
+                <div className="mt-4 mb-2 font-semibold">Sound Settings</div>
+                <label className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    checked={isMuted}
+                    onChange={e => setIsMuted(e.target.checked)}
+                  />
+                  <span>Mute All Sounds</span>
+                </label>
+                <label className="flex items-center justify-between mb-2 gap-2">
+                  <span style={{ minWidth: '90px' }}>Music Volume:</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={musicVolume}
+                    disabled={isMuted}
+                    onChange={e => setMusicVolume(parseFloat(e.target.value))}
+                    style={{ width: '120px', flex: 1 }}
+                  />
+                  <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(musicVolume * 100)}</span>
+                </label>
+                <label className="flex items-center justify-between mb-2 gap-2">
+                  <span style={{ minWidth: '90px' }}>Effects Volume:</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={effectsVolume}
+                    disabled={isMuted}
+                    onChange={e => setEffectsVolume(parseFloat(e.target.value))}
+                    style={{ width: '120px', flex: 1 }}
+                  />
+                  <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(effectsVolume * 100)}</span>
+                </label>
               </div>
             </div>
           </div>
@@ -714,7 +789,7 @@ function App() {
       </div>
       <audio ref={levelUpSoundRef} src="/audio/levelup.mp3" preload="auto" />
       <audio ref={buttonSoundRef} src="/audio/button.mp3" preload="auto" />
-      <audio ref={bgMusicRef} src="/audio/background.mp3" loop preload="auto" />
+      <audio ref={bgMusicRef} src="/audio/music/background.mp3" loop preload="auto" />
       {/* Render Pokedex only after sprite is loaded */}
       {currentPokemonInfo.sprite && (
         <Pokedex
