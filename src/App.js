@@ -383,9 +383,10 @@ function App() {
   return (
     <div className={`
       min-h-screen flex flex-col items-center justify-center
-      transition-colors duration-300 font-sans py-8
-      ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'} {/* Changed dark mode background to gray-700 */}
-    `}>
+      transition-colors duration-300 font-sans py-4 md:py-8
+      w-full max-w-full
+      ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}
+    `} style={{ minWidth: 0 }}>
       {/* Top-left clock/date container, styled like badges/pokedex */}
       <div
         className={`
@@ -395,31 +396,32 @@ function App() {
         `}
         style={{
           position: 'fixed',
-          top: '120px', // Just under the logo
-          left: '40px',
+          top: '120px',
+          left: 'max(8px, 3vw)',
           zIndex: 50,
           borderRadius: '0',
           boxShadow: isDarkMode
             ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
             : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
-          padding: '22px 38px 18px 32px',
-          minWidth: '230px',
-          minHeight: '90px',
+          padding: 'min(22px, 4vw) min(38px, 6vw) min(18px, 3vw) min(32px, 5vw)',
+          minWidth: '180px',
+          minHeight: '70px',
+          maxWidth: '90vw',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '1.1rem',
+          fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
           pointerEvents: 'none',
         }}
       >
-        <div style={{ fontSize: '2.1rem', fontWeight: 'bold', letterSpacing: '2px', lineHeight: 1, textAlign: 'center' }}>
+        <div style={{ fontSize: 'clamp(1.2rem, 4vw, 2.1rem)', fontWeight: 'bold', letterSpacing: '2px', lineHeight: 1, textAlign: 'center' }}>
           {formatTime(currentTime).split(' ')[0]}
         </div>
-        <div style={{ fontSize: '1.3rem', fontWeight: 'bold', marginTop: '-4px', marginBottom: '2px', textAlign: 'center' }}>
+        <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.3rem)', fontWeight: 'bold', marginTop: '-4px', marginBottom: '2px', textAlign: 'center' }}>
           {formatTime(currentTime).split(' ')[1]}
         </div>
-        <div style={{ fontSize: '1.1rem', marginTop: '2px', letterSpacing: '1px', textAlign: 'center' }}>
+        <div style={{ fontSize: 'clamp(0.8rem, 1.5vw, 1.1rem)', marginTop: '2px', letterSpacing: '1px', textAlign: 'center' }}>
           {formatDate(currentTime)}
         </div>
       </div>
@@ -432,11 +434,12 @@ function App() {
         `}
         style={{
           position: 'fixed',
-          top: '320px', // was 270px, now 320px for more space
-          left: '40px',
+          top: '320px',
+          left: 'max(8px, 3vw)',
           zIndex: 49,
-          width: '300px',
-          height: '420px',
+          width: 'min(95vw, 300px)',
+          height: 'min(60vw, 420px)',
+          maxHeight: '70vh',
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
@@ -480,24 +483,21 @@ function App() {
           </form>
           <ul className="flex-1 overflow-y-auto max-h-full text-left pr-1" style={{minHeight: 0}}>
             {todos.length === 0 && (
-              <li className="text-gray-400 text-center flex flex-col items-center justify-center" style={{height: '100%'}}>
-                <span style={{fontSize: '1rem', marginBottom: '1.5rem'}}>No tasks yet!</span>
-                <pre style={{fontSize: '0.55rem', lineHeight: '1', margin: 0, color: isDarkMode ? '#888' : '#aaa', fontFamily: 'monospace'}}>{`
-    ⢀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⠀⣠⣤⣶⣶
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀⢰⣿⣿⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣀⣀⣾⣿⣿⣿⣿
-    ⣿⣿⣿⣿⣿⡏⠉⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣿
-    ⣿⣿⣿⣿⣿⣿⠀⠀⠀⠈⠛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠛⠉⠉⠀⣿
-    ⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠙⠿⠿⠿⠻⠿⠿⠟⠿⠛⠉⠀⠀⠀⠀⠀⣸⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣷⣄⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⣴⣿⣿⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⡟⠀⠀⢰⣹⡆⠀⠀⠀⠀⠀⠀⣭⣷⠀⠀⠀⠸⣿⣿⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠈⠉⠀⠀⠤⠄⠀⠀⠀⠉⠁⠀⠀⠀⠀⢿⣿⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⢾⣿⣷⠀⠀⠀⠀⡠⠤⢄⠀⠀⠀⠠⣿⣿⣷⠀⢸⣿⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⡀⠉⠀⠀⠀⠀⠀⢄⠀⢀⠀⠀⠀⠀⠉⠉⠁⠀⠀⣿⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣿
-    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿
-`}</pre>
+              <li
+                className="text-gray-400 text-center"
+                style={{width: '100%', marginTop: '1.5rem'}}
+              >
+                <div style={{fontSize: 'clamp(0.9rem, 2vw, 1.2rem)', marginBottom: '0.5em'}}>No tasks yet!</div>
+                <span
+                  aria-label="Mario Star"
+                  style={{
+                    display: 'inline-block',
+                    width: '2.5em',
+                    height: '2.5em',
+                  }}
+                >
+                  <img src="/icons/mariostar.svg" alt="Mario Star" style={{ width: '100%', height: '100%' }} />
+                </span>
               </li>
             )}
             {todos.map((todo, idx) => (
@@ -535,30 +535,39 @@ function App() {
         ownedBadges={ownedBadges}
         completedSessions={completedSessions}
         className="animate-fadein-right"
+        style={{
+          maxWidth: '95vw',
+          width: 'min(95vw, 300px)',
+          maxHeight: '60vh',
+          minWidth: 0,
+          overflowY: 'auto',
+          padding: 'min(18px, 4vw) min(8px, 2vw)',
+          fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
+        }}
       />
       {/* Large centered logo at the top of the page */}
       <img 
         src="/icons/logo.png" 
         alt="PokeDoro Logo" 
-        className="mx-auto block mb-8 w-64 h-auto absolute top-8 animate-fadein-top"
+        className="mx-auto block mb-8 w-44 md:w-64 h-auto absolute top-4 md:top-8 animate-fadein-top"
         style={{ maxWidth: '80vw' }}
       />
       {/* Main content: timer, etc. */}
-      <div className="container flex flex-col md:flex-row items-center justify-center gap-6 max-w-3xl px-4 mt-8 animate-fadein-center">
+      <div className="container flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 max-w-3xl w-full px-2 md:px-4 mt-8 animate-fadein-center" style={{minWidth: 0}}>
         <div className="header flex flex-col items-center">
           <img
-            className="sprite w-64 h-64 object-contain cursor-pointer"
+            className="sprite w-40 md:w-64 h-40 md:h-64 object-contain cursor-pointer"
             alt="Random Pokemon"
             src={currentPokemonInfo.sprite}
-            style={{ imageRendering: 'pixelated' }}
+            style={{ imageRendering: 'pixelated', maxWidth: '60vw', height: 'auto' }}
             onClick={() => { if (currentPokemonInfo.sprite) togglePokedex(); }}
             title="Click to open Pokédex"
           />
         </div>
         {/* Timer Container */}
-        <div className="flex flex-col items-center gap-6">
+        <div className="flex flex-col items-center gap-4 md:gap-6 w-full max-w-md">
           <div className={`
-            timer w-96 text-center relative border-4 border-black p-6 bg-opacity-100
+            timer w-full max-w-md text-center relative border-4 border-black p-4 md:p-6 bg-opacity-100
             ${isDarkMode 
               ? 'bg-[#1f2937] text-[#d1d5db]'
               : 'bg-[#f7fee7] text-[#374151]'}
@@ -569,7 +578,8 @@ function App() {
           style={{
             boxShadow: isDarkMode
               ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-              : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
+              : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
+            minWidth: 0,
           }}>
             <div className={`
               absolute w-2 h-2 bottom-0 right-0 
@@ -588,8 +598,11 @@ function App() {
               <div className="hp-label font-bold mr-2">HP</div>
               <div className="hp-bar-wrapper flex-1 border-2 border-black bg-gray-200 h-4">
                 <div 
-                  className={`hp-remaining h-full ${hpPercentage > 50 ? 'bg-green-500' : hpPercentage > 20 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                  style={{ width: `${hpPercentage}%` }}
+                  className="hp-remaining h-full"
+                  style={{
+                    width: `${hpPercentage}%`,
+                    backgroundColor: `hsl(${hpPercentage * 1.2}, 70%, 40%)`,
+                  }}
                 ></div>
               </div>
             </div>
@@ -837,6 +850,15 @@ function App() {
           pokemonSpriteUrl={currentPokemonInfo.sprite}
           pokedexData={pokedexData}
           darkMode={isDarkMode}
+          style={{
+            maxWidth: '95vw',
+            width: 'min(95vw, 300px)',
+            maxHeight: '60vh',
+            minWidth: 0,
+            overflowY: 'auto',
+            padding: 'min(18px, 4vw) min(8px, 2vw)',
+            fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
+          }}
         />
       )}
       {/* Global footer */}
