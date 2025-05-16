@@ -1,8 +1,18 @@
 // src/Pokedex.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Pokedex = ({ isOpen, togglePokedex, pokemonSpriteUrl, pokedexData, darkMode }) => {
-  const containerClasses = `pokedex-container ${isOpen ? 'open' : 'closed'} ${darkMode ? 'dark' : ''}`;
+  const [animationClass, setAnimationClass] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setAnimationClass('animate-fadein-right');
+    } else {
+      setAnimationClass('');
+    }
+  }, [isOpen]);
+
+  const containerClasses = `pokedex-container ${isOpen ? 'open' : 'closed'} ${darkMode ? 'dark' : ''} ${animationClass}`;
   const tabClasses = `pokedex-tab ${darkMode ? 'dark' : ''}`;
   const contentClasses = `pokedex-content ${darkMode ? 'dark' : ''}`;
 

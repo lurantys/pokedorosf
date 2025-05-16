@@ -45,3 +45,128 @@
 .settings-scroll::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+.animate-todo-fadein {
+  animation: todoFadeIn 0.7s cubic-bezier(.4,2,.6,1);
+}
+@keyframes todoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Entrance Animations */
+.animate-fadein-left {
+  animation: fadeInLeft 0.7s cubic-bezier(.4,2,.6,1);
+}
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadein-right {
+  animation: fadeInRight 0.7s cubic-bezier(.4,2,.6,1);
+}
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadein-top {
+  animation: fadeInTop 0.7s cubic-bezier(.4,2,.6,1);
+}
+@keyframes fadeInTop {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadein-bottom {
+  animation: fadeInBottom 0.7s cubic-bezier(.4,2,.6,1);
+}
+@keyframes fadeInBottom {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadein-center {
+  animation: fadeInCenter 0.7s cubic-bezier(.4,2,.6,1);
+}
+@keyframes fadeInCenter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.badges-container.closed {
+  transform: translateX(calc(100% - 30px));
+  opacity: 1;
+  pointer-events: all;
+}
+
+.pokedex-container.closed {
+  transform: translateX(calc(100% - 30px));
+  opacity: 1;
+  pointer-events: all;
+}
+
+.todo-fade {
+  animation: todoFadeIn 0.35s cubic-bezier(.4,2,.6,1);
+}
+@keyframes todoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.todo-fade-out {
+  animation: todoFadeOut 0.28s cubic-bezier(.4,2,.6,1) forwards;
+}
+@keyframes todoFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}

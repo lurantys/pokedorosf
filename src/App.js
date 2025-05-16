@@ -57,6 +57,7 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [todoInput, setTodoInput] = useState('');
+  const [removingIdx, setRemovingIdx] = useState(null);
 
   // Track completed work sessions for badges
   const [completedSessions, setCompletedSessions] = useState(() => {
@@ -359,8 +360,11 @@ function App() {
   const addTodo = (e) => {
     e.preventDefault();
     if (todoInput.trim()) {
-      setTodos([...todos, { text: todoInput.trim(), done: false }]);
+      setTodos([...todos, { text: todoInput.trim(), done: false, _justAdded: true }]);
       setTodoInput('');
+      setTimeout(() => {
+        setTodos(todos => todos.map((todo, i) => ({ ...todo, _justAdded: false })));
+      }, 400);
     }
   };
 
@@ -369,7 +373,11 @@ function App() {
   };
 
   const removeTodo = (idx) => {
-    setTodos(todos => todos.filter((_, i) => i !== idx));
+    setRemovingIdx(idx);
+    setTimeout(() => {
+      setTodos(todos => todos.filter((_, i) => i !== idx));
+      setRemovingIdx(null);
+    }, 300);
   };
 
   return (
@@ -382,6 +390,7 @@ function App() {
       <div
         className={`
           clock-container text-center relative border-4 border-black
+          animate-fadein-left
           ${isDarkMode ? 'bg-[#1f2937] text-[#d1d5db]' : 'bg-[#f7fee7] text-[#374151]'}
         `}
         style={{
@@ -418,6 +427,7 @@ function App() {
       <div
         className={`
           todo-list-fixed
+          animate-fadein-left
           ${isDarkMode ? 'text-[#d1d5db]' : 'text-[#374151]'}
         `}
         style={{
@@ -430,7 +440,10 @@ function App() {
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
+          transition: 'transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s cubic-bezier(.4,2,.6,1)',
         }}
+        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.025)'}
+        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
       >
         <div className={`
           todo-list w-full h-full text-center border-4 border-black p-4 bg-opacity-100 flex flex-col
@@ -468,7 +481,10 @@ function App() {
           <ul className="flex-1 overflow-y-auto max-h-full text-left pr-1" style={{minHeight: 0}}>
             {todos.length === 0 && <li className="text-gray-400 text-center">No tasks yet!</li>}
             {todos.map((todo, idx) => (
-              <li key={idx} className="flex items-center justify-between py-1 group">
+              <li
+                key={idx}
+                className={`flex items-center justify-between py-1 group ${removingIdx === idx ? 'todo-fade-out' : todo._justAdded ? 'todo-fade' : ''}`}
+              >
                 <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
                   <input
                     type="checkbox"
@@ -498,22 +514,25 @@ function App() {
         darkMode={isDarkMode}
         ownedBadges={ownedBadges}
         completedSessions={completedSessions}
+        className="animate-fadein-right"
       />
       {/* Large centered logo at the top of the page */}
       <img 
         src="/icons/logo.png" 
         alt="PokeDoro Logo" 
-        className="mx-auto block mb-8 w-64 h-auto absolute top-8"
+        className="mx-auto block mb-8 w-64 h-auto absolute top-8 animate-fadein-top"
         style={{ maxWidth: '80vw' }}
       />
       {/* Main content: timer, etc. */}
-      <div className="container flex flex-col md:flex-row items-center justify-center gap-6 max-w-3xl px-4 mt-8">
+      <div className="container flex flex-col md:flex-row items-center justify-center gap-6 max-w-3xl px-4 mt-8 animate-fadein-center">
         <div className="header flex flex-col items-center">
           <img
-            className="sprite w-64 h-64 object-contain"
+            className="sprite w-64 h-64 object-contain cursor-pointer"
             alt="Random Pokemon"
             src={currentPokemonInfo.sprite}
             style={{ imageRendering: 'pixelated' }}
+            onClick={() => { if (currentPokemonInfo.sprite) togglePokedex(); }}
+            title="Click to open Pokédex"
           />
         </div>
         {/* Timer Container */}
@@ -801,7 +820,7 @@ function App() {
         />
       )}
       {/* Global footer */}
-      <footer className="global-footer">
+      <footer className="global-footer animate-fadein-bottom">
         @lurantys | sf summer 2025
       </footer>
     </div>
