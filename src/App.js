@@ -163,6 +163,8 @@ function App() {
 
   const handleTimerEnd = () => {
     playLevelUpSound();
+    // Send desktop notification
+    sendTimerNotification(isBreakTime ? 'Work' : 'Break');
     setIsBreakTime(prev => !prev);
     if (!isBreakTime) {
       // Start break
@@ -187,6 +189,10 @@ function App() {
 
   const startTimer = () => {
     if (!isRunning) {
+      // Request notification permission on first timer start
+      if (timeLeft === null) {
+        requestNotificationPermission();
+      }
       setIsRunning(true);
       if (timeLeft === null) {
         const duration = isBreakTime ? shortBreakDuration : workDuration;
@@ -389,6 +395,32 @@ function App() {
       setTodos(todos => todos.filter((_, i) => i !== idx));
       setRemovingIdx(null);
     }, 300);
+  };
+
+  // Function to request notification permission
+  const requestNotificationPermission = () => {
+    if (!('Notification' in window)) {
+      console.log('This browser does not support desktop notification');
+    } else if (Notification.permission !== 'granted') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          console.log('Notification permission granted.');
+        } else {
+          console.log('Notification permission denied.');
+        }
+      });
+    }
+  };
+
+  // Function to send a desktop notification
+  const sendTimerNotification = (type) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const options = {
+        body: type === 'Work' ? 'Work session ended! Time for a break!' : 'Break session ended! Time to get back to work!',
+        icon: '/icons/pokeball.png' // You might want to add a small icon
+      };
+      new Notification(`PokeDoro: ${type} Session Ended!`, options);
+    }
   };
 
   return (
