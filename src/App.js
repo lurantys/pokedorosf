@@ -423,6 +423,23 @@ function App() {
     }
   };
 
+  // Handler to play Pokémon cry (legacy) with error handling
+  const playPokemonCry = () => {
+    if (!currentPokemonInfo || !currentPokemonInfo.sprite || !pokemonSprites.length) return;
+    const idx = pokemonSprites.findIndex(p => p.sprite === currentPokemonInfo.sprite);
+    if (idx === -1) return;
+    const pokemonId = idx + 1; // National Dex numbers are 1-based, no padding for legacy
+    const cryUrl = `https://github.com/PokeAPI/cries/raw/refs/heads/main/cries/pokemon/legacy/${pokemonId}.ogg`;
+    console.log('Attempting to play cry:', cryUrl);
+    const audio = new window.Audio(cryUrl);
+    audio.onerror = () => {
+      console.error('Failed to load cry audio:', cryUrl);
+    };
+    audio.play().catch((err) => {
+      console.error('Audio play failed:', err);
+    });
+  };
+
   return (
     <div className={`
       min-h-screen flex flex-col items-center justify-center
@@ -603,8 +620,11 @@ function App() {
             alt="Random Pokemon"
             src={currentPokemonInfo.sprite}
             style={{ imageRendering: 'pixelated', maxWidth: '60vw', height: 'auto' }}
-            onClick={() => { if (currentPokemonInfo.sprite) togglePokedex(); }}
-            title="Click to open Pokédex"
+            onClick={() => {
+              playPokemonCry();
+              if (currentPokemonInfo.sprite) togglePokedex();
+            }}
+            title="Click to play cry and open Pokédex"
           />
         </div>
         {/* Timer Container */}
