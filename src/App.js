@@ -76,6 +76,13 @@ function App() {
     return saved ? parseFloat(saved) : 0.5;
   });
 
+  // New state for background music, selected once on component initialization
+  const [currentBgMusic, setCurrentBgMusic] = useState(() => {
+    const initialMusic = Math.random() < 0.5 ? '/audio/music/background.mp3' : '/audio/music/bg2.mp3';
+    console.log('Initial background music selected:', initialMusic);
+    return initialMusic;
+  });
+
   // Save settings whenever they change
   useEffect(() => {
     localStorage.setItem('workDuration', workDuration.toString());
@@ -221,6 +228,18 @@ function App() {
     localStorage.setItem('effectsVolume', effectsVolume);
   }, [isMuted, musicVolume, effectsVolume]);
 
+  // Effect to handle background music volume and mute state
+  useEffect(() => {
+    const bgMusic = bgMusicRef.current;
+    if (!bgMusic) return;
+
+    bgMusic.volume = isMuted ? 0 : musicVolume;
+    if (isMuted && !bgMusic.paused) {
+      bgMusic.pause(); // Pause if muted and currently playing
+    }
+    // Note: Playback is initiated by the first document click listener
+  }, [bgMusicRef, isMuted, musicVolume, currentBgMusic]);
+
   const playLevelUpSound = () => {
     const sound = levelUpSoundRef.current;
     if (!sound || isMuted) return;
@@ -240,33 +259,25 @@ function App() {
   const startBackgroundMusic = () => {
     const bgMusic = bgMusicRef.current;
     if (!bgMusic) return;
-    bgMusic.volume = isMuted ? 0 : musicVolume;
-    if (!isMuted) {
-      bgMusic.play().catch(() => {});
-    } else {
+
+    // Attempt to play only if not muted AND is currently paused
+    if (!isMuted && bgMusic.paused) {
+      bgMusic.volume = musicVolume; // Ensure correct volume is set before playing
+      bgMusic.play().catch(error => {
+        console.log('Background music play prevented by browser policy.', error);
+        // Log error but no need to do anything else here, as the click listener is once
+      });
+    } else if (isMuted && !bgMusic.paused) { // If muted and playing, pause it
       bgMusic.pause();
-      bgMusic.currentTime = 0;
     }
   };
-
-  // Update background music volume/mute on change
-  useEffect(() => {
-    const bgMusic = bgMusicRef.current;
-    if (bgMusic) {
-      bgMusic.volume = isMuted ? 0 : musicVolume;
-      if (isMuted) {
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-      }
-    }
-  }, [isMuted, musicVolume]);
 
   // Start background music on first click
   useEffect(() => {
     const handler = () => startBackgroundMusic();
-    document.addEventListener('click', handler, { once: true });
+    document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
-  }, []);
+  }, [startBackgroundMusic]);
 
   // Fetch Pokémon details whenever currentPokemonInfo changes
   useEffect(() => {
@@ -841,7 +852,8 @@ function App() {
       </div>
       <audio ref={levelUpSoundRef} src="/audio/levelup.mp3" preload="auto" />
       <audio ref={buttonSoundRef} src="/audio/button.mp3" preload="auto" />
-      <audio ref={bgMusicRef} src="/audio/music/background.mp3" loop preload="auto" />
+      {/* Background Music Audio element */}
+      <audio ref={bgMusicRef} src={currentBgMusic} loop preload="auto" />
       {/* Render Pokedex only after sprite is loaded */}
       {currentPokemonInfo.sprite && (
         <Pokedex
