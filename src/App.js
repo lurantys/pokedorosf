@@ -342,7 +342,7 @@ function App() {
     };
     fetchPokemonDetails();
   }, [currentPokemonInfo]);
-
+  //test
   // Add event listener for Pokedex data updates
   useEffect(() => {
     const handlePokedexDataUpdate = (event) => {
