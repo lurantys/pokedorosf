@@ -4,6 +4,7 @@ import Pokedex from './Pokedex'; // Import the Pokedex component
 import Badges from './Badges'; // Import the Badges component
 import TodoList from './TodoList';
 import Timer from './Timer';
+import AuthPage from './AuthPage';
 
 const POKEMON_SPRITES_URL = '/pokemonsprites.json';
 
@@ -447,6 +448,13 @@ function App() {
       console.error('Audio play failed:', err);
     });
   };
+
+  // Check for guest login flag
+  const isGuest = localStorage.getItem('pokedorosf_guest') === 'true';
+
+  if (!isGuest) {
+    return <AuthPage onAuthSuccess={() => window.location.reload()} />;
+  }
 
   return (
     <div className={`
