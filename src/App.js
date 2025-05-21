@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import Pokedex from './Pokedex'; // Import the Pokedex component
 import Badges from './Badges'; // Import the Badges component
+import TodoList from './TodoList';
+import Timer from './Timer';
 
 const POKEMON_SPRITES_URL = '/pokemonsprites.json';
 
@@ -73,6 +75,10 @@ function App() {
   });
   const [effectsVolume, setEffectsVolume] = useState(() => {
     const saved = localStorage.getItem('effectsVolume');
+    return saved ? parseFloat(saved) : 0.5;
+  });
+  const [cryVolume, setCryVolume] = useState(() => {
+    const saved = localStorage.getItem('cryVolume');
     return saved ? parseFloat(saved) : 0.5;
   });
 
@@ -232,7 +238,8 @@ function App() {
     localStorage.setItem('isMuted', isMuted);
     localStorage.setItem('musicVolume', musicVolume);
     localStorage.setItem('effectsVolume', effectsVolume);
-  }, [isMuted, musicVolume, effectsVolume]);
+    localStorage.setItem('cryVolume', cryVolume);
+  }, [isMuted, musicVolume, effectsVolume, cryVolume]);
 
   // Effect to handle background music volume and mute state
   useEffect(() => {
@@ -432,6 +439,7 @@ function App() {
     const cryUrl = `https://github.com/PokeAPI/cries/raw/refs/heads/main/cries/pokemon/legacy/${pokemonId}.ogg`;
     console.log('Attempting to play cry:', cryUrl);
     const audio = new window.Audio(cryUrl);
+    audio.volume = isMuted ? 0 : cryVolume;
     audio.onerror = () => {
       console.error('Failed to load cry audio:', cryUrl);
     };
@@ -486,107 +494,16 @@ function App() {
         </div>
       </div>
       {/* Floating To-Do List Container below the clock/date, left-aligned */}
-      <div
-        className={`
-          todo-list-fixed
-          animate-fadein-left
-          ${isDarkMode ? 'text-[#d1d5db]' : 'text-[#374151]'}
-        `}
-        style={{
-          position: 'fixed',
-          top: '320px',
-          left: 'max(8px, 3vw)',
-          zIndex: 49,
-          width: 'min(95vw, 300px)',
-          height: 'min(60vw, 420px)',
-          maxHeight: '70vh',
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          transition: 'transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s cubic-bezier(.4,2,.6,1)',
-        }}
-        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.025)'}
-        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        <div className={`
-          todo-list w-full h-full text-center border-4 border-black p-4 bg-opacity-100 flex flex-col
-          ${isDarkMode 
-            ? 'bg-[#1f2937] text-[#d1d5db]'
-            : 'bg-[#f7fee7] text-[#374151]'}
-        `}
-        style={{
-          boxShadow: isDarkMode
-            ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-            : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          <div className="text-lg font-semibold mb-3">Tasks</div>
-          <form onSubmit={addTodo} className="flex gap-2 mb-4" style={{flexShrink: 0}}>
-            <input
-              type="text"
-              value={todoInput}
-              onChange={e => setTodoInput(e.target.value)}
-              placeholder="Add a task..."
-              className={`flex-1 px-2 py-1 border rounded ${isDarkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900'}`}
-              maxLength={60}
-              style={{minWidth: 0}}
-            />
-            <button
-              type="submit"
-              className={`px-3 py-1 border-2 border-black font-medium transition-transform duration-200 transform hover:-translate-y-0.5 hover:shadow-md ${isDarkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}`}
-              style={{whiteSpace: 'nowrap'}}
-            >
-              Add
-            </button>
-          </form>
-          <ul className="flex-1 overflow-y-auto max-h-full text-left pr-1" style={{minHeight: 0}}>
-            {todos.length === 0 && (
-              <li
-                className="text-gray-400 text-center"
-                style={{width: '100%', marginTop: '1.5rem'}}
-              >
-                <div style={{fontSize: 'clamp(0.9rem, 2vw, 1.2rem)', marginBottom: '0.5em'}}>No tasks yet!</div>
-                <span
-                  aria-label="Mario Star"
-                  style={{
-                    display: 'inline-block',
-                    width: '2.5em',
-                    height: '2.5em',
-                  }}
-                >
-                  <img src="/icons/mariostar.svg" alt="Mario Star" style={{ width: '100%', height: '100%' }} />
-                </span>
-              </li>
-            )}
-            {todos.map((todo, idx) => (
-              <li
-                key={idx}
-                className={`flex items-center justify-between py-1 group ${removingIdx === idx ? 'todo-fade-out' : todo._justAdded ? 'todo-fade' : ''}`}
-              >
-                <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
-                  <input
-                    type="checkbox"
-                    checked={todo.done}
-                    onChange={() => toggleTodo(idx)}
-                    className="accent-green-500 w-4 h-4"
-                  />
-                  <span className={`flex-1 truncate ${todo.done ? 'line-through text-gray-400' : ''}`}>{todo.text}</span>
-                </label>
-                <button
-                  onClick={() => removeTodo(idx)}
-                  className="ml-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Remove"
-                  type="button"
-                >
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <TodoList
+        todos={todos}
+        todoInput={todoInput}
+        setTodoInput={setTodoInput}
+        addTodo={addTodo}
+        toggleTodo={toggleTodo}
+        removeTodo={removeTodo}
+        removingIdx={removingIdx}
+        isDarkMode={isDarkMode}
+      />
       {/* Badges sliding component at the top right */}
       <Badges
         isOpen={isBadgesOpen}
@@ -628,284 +545,38 @@ function App() {
           />
         </div>
         {/* Timer Container */}
-        <div className="flex flex-col items-center gap-4 md:gap-6 w-full max-w-md">
-          <div className={`
-            timer w-full max-w-md text-center relative border-4 border-black p-4 md:p-6 bg-opacity-100
-            ${isDarkMode 
-              ? 'bg-[#1f2937] text-[#d1d5db]'
-              : 'bg-[#f7fee7] text-[#374151]'}
-            ${isBreakTime 
-              ? (isDarkMode ? 'border-green-500' : 'border-green-500') 
-              : ''}
-          `}
-          style={{
-            boxShadow: isDarkMode
-              ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-              : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
-            minWidth: 0,
-          }}>
-            <div className={`
-              absolute w-2 h-2 bottom-0 right-0 
-              bg-black transform translate-x-1 translate-y-1
-            `}></div>
-            
-            <div id="status" className={`
-              text-lg font-semibold mb-3
-              ${isBreakTime ? 'text-green-500' : ''}
-            `}>
-              {status}
-            </div>
-            
-            {/* HP Bar */}
-            <div className="hp-bar-container mb-4 flex items-center">
-              <div className="hp-label font-bold mr-2">HP</div>
-              <div className="hp-bar-wrapper flex-1 border-2 border-black bg-gray-200 h-4">
-                <div 
-                  className="hp-remaining h-full"
-                  style={{
-                    width: `${hpPercentage}%`,
-                    backgroundColor: `hsl(${hpPercentage * 1.2}, 70%, 40%)`,
-                  }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className={`
-              time bg-gray-100 py-3 px-4 mb-4 text-center
-              ${isDarkMode ? 'bg-gray-800' : ''}
-            `}
-            style={{
-              marginBottom: '1rem',
-              ...(isDarkMode ? { backgroundColor: '#1f2937' } : { backgroundColor: '#f7fee7' })
-            }}>
-              <span id="time-display" className="flex items-center justify-center gap-1 text-4xl">
-                <span id="minutes" className={`
-                  font-mono font-bold
-                  ${isBreakTime ? 'text-green-600' : ''}
-                  ${isDarkMode && !isBreakTime ? 'text-gray-100' : (!isDarkMode && !isBreakTime ? 'text-gray-900' : '')}
-                `}>
-                  {minutes.toString().padStart(2, '0')}
-                </span>
-                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>:</span>
-                <span id="seconds" className={`
-                  font-mono font-bold
-                  ${isBreakTime ? 'text-green-600' : ''}
-                  ${isDarkMode && !isBreakTime ? 'text-gray-100' : (!isDarkMode && !isBreakTime ? 'text-gray-900' : '')}
-                `}>
-                  {seconds.toString().padStart(2, '0')}
-                </span>
-              </span>
-            </div>
-            {/* --- RESTORED BUTTONS AND SETTINGS --- */}
-            <div className="flex flex-col gap-2">
-              <button 
-                id="start-btn" 
-                onClick={() => {playButtonSound();startTimer();}}
-                className={`
-                  px-4 py-2 border-2 border-black font-medium transition-transform duration-200
-                  transform hover:-translate-y-0.5 hover:shadow-md
-                  ${isDarkMode 
-                    ? 'bg-gray-600 hover:bg-gray-500 text-white' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
-                `}
-                style={{
-                  boxShadow: isDarkMode
-                    ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-                    : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
-                }}
-              >
-                {isRunning ? 'Pause' : 'Start'}
-              </button>
-              <button 
-                onClick={() => {playButtonSound();resetTimer();}}
-                className={`
-                  px-4 py-2 border-2 border-black font-medium transition-transform duration-200
-                  transform hover:-translate-y-0.5 hover:shadow-md
-                  ${isDarkMode 
-                    ? 'bg-gray-600 hover:bg-gray-500 text-white' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
-                `}
-                style={{
-                  boxShadow: isDarkMode
-                    ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-                    : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
-                }}
-              >
-                Reset
-              </button>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => {playButtonSound();toggleDarkMode();}}
-                  className={`
-                    flex-1 px-4 py-2 border-2 border-black font-medium transition-transform duration-200
-                    transform hover:-translate-y-0.5 hover:shadow-md
-                    ${isDarkMode 
-                      ? 'bg-gray-600 hover:bg-gray-500 text-white' 
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
-                  `}
-                  style={{
-                    boxShadow: isDarkMode
-                      ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-                      : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
-                  }}
-                >
-                  Theme
-                </button>
-                <button 
-                  onClick={() => {playButtonSound();toggleSettings();}}
-                  className={`
-                    flex-1 px-4 py-2 border-2 border-black font-medium transition-transform duration-200
-                    transform hover:-translate-y-0.5 hover:shadow-md
-                    ${isDarkMode 
-                      ? 'bg-gray-600 hover:bg-gray-500 text-white' 
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
-                  `}
-                  style={{
-                    boxShadow: isDarkMode
-                      ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-                      : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
-                  }}
-                >
-                  Settings
-                </button>
-              </div>
-            </div>
-            <div
-              className={`
-                settings mt-4 pt-4 border-t-2 
-                ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}
-                settings-animated
-              `}
-              style={{
-                maxHeight: showSettings ? '300px' : '0',
-                opacity: showSettings ? 1 : 0,
-                overflow: 'hidden',
-                transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease'
-              }}
-              aria-hidden={!showSettings}
-            >
-              <div
-                className="flex flex-col gap-2 text-left text-sm settings-scroll"
-                style={{
-                  pointerEvents: showSettings ? 'auto' : 'none',
-                  opacity: showSettings ? 1 : 0,
-                  transition: 'opacity 0.3s',
-                  maxHeight: '220px',
-                  overflowY: 'auto',
-                  paddingRight: '8px',
-                }}
-              >
-                <label className="flex items-center justify-between">
-                  <span>Work Time:</span>
-                  <input 
-                    type="number" 
-                    value={workDuration}
-                    min="1" 
-                    max="60"
-                    onChange={(e) => {
-                      const newDuration = Number(e.target.value);
-                      setWorkDuration(newDuration);
-                      if (!isRunning && !isBreakTime) {
-                        setMinutes(newDuration);
-                        setTimeLeft(newDuration * 60);
-                      }
-                    }}
-                    className={`
-                      w-16 px-2 py-1 border 
-                      ${isDarkMode 
-                        ? 'bg-gray-800 border-gray-600 text-gray-100' 
-                        : 'bg-white border-gray-300 text-gray-900'}
-                    `}
-                  /> min
-                </label>
-                <label className="flex items-center justify-between">
-                  <span>Short Break:</span>
-                  <input 
-                    type="number" 
-                    value={shortBreakDuration}
-                    min="1" 
-                    max="30"
-                    onChange={(e) => {
-                      const newDuration = Number(e.target.value);
-                      setShortBreakDuration(newDuration);
-                      if (!isRunning && isBreakTime) {
-                        setMinutes(newDuration);
-                        setTimeLeft(newDuration * 60);
-                      }
-                    }}
-                    className={`
-                      w-16 px-2 py-1 border 
-                      ${isDarkMode 
-                        ? 'bg-gray-800 border-gray-600 text-gray-100' 
-                        : 'bg-white border-gray-300 text-gray-900'}
-                    `}
-                  /> min
-                </label>
-                <label className="flex items-center justify-between">
-                  <span>Long Break:</span>
-                  <input 
-                    type="number" 
-                    value={longBreakDuration}
-                    min="1" 
-                    max="60"
-                    onChange={(e) => {
-                      const newDuration = Number(e.target.value);
-                      setLongBreakDuration(newDuration);
-                    }}
-                    className={`
-                      w-16 px-2 py-1 border 
-                      ${isDarkMode 
-                        ? 'bg-gray-800 border-gray-600 text-gray-100' 
-                        : 'bg-white border-gray-300 text-gray-900'}
-                    `}
-                  /> min
-                </label>
-                <div className="mt-4 mb-2 font-semibold">Sound Settings</div>
-                <label className="flex items-center gap-2 mb-2">
-                  <input
-                    type="checkbox"
-                    checked={isMuted}
-                    onChange={e => setIsMuted(e.target.checked)}
-                  />
-                  <span>Mute All Sounds</span>
-                </label>
-                <label className="flex items-center justify-between mb-2 gap-2">
-                  <span style={{ minWidth: '90px' }}>Music Volume:</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={musicVolume}
-                    disabled={isMuted}
-                    onChange={e => setMusicVolume(parseFloat(e.target.value))}
-                    style={{ width: '120px', flex: 1 }}
-                  />
-                  <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(musicVolume * 100)}</span>
-                </label>
-                <label className="flex items-center justify-between mb-2 gap-2">
-                  <span style={{ minWidth: '90px' }}>Effects Volume:</span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={effectsVolume}
-                    disabled={isMuted}
-                    onChange={e => setEffectsVolume(parseFloat(e.target.value))}
-                    style={{ width: '120px', flex: 1 }}
-                  />
-                  <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(effectsVolume * 100)}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Timer
+          isDarkMode={isDarkMode}
+          isBreakTime={isBreakTime}
+          status={status}
+          hpPercentage={hpPercentage}
+          minutes={minutes}
+          seconds={seconds}
+          isRunning={isRunning}
+          showSettings={showSettings}
+          workDuration={workDuration}
+          shortBreakDuration={shortBreakDuration}
+          longBreakDuration={longBreakDuration}
+          isMuted={isMuted}
+          musicVolume={musicVolume}
+          effectsVolume={effectsVolume}
+          cryVolume={cryVolume}
+          setWorkDuration={setWorkDuration}
+          setShortBreakDuration={setShortBreakDuration}
+          setLongBreakDuration={setLongBreakDuration}
+          setIsMuted={setIsMuted}
+          setMusicVolume={setMusicVolume}
+          setEffectsVolume={setEffectsVolume}
+          setCryVolume={setCryVolume}
+          setMinutes={setMinutes}
+          setTimeLeft={setTimeLeft}
+          startTimer={startTimer}
+          resetTimer={resetTimer}
+          toggleDarkMode={toggleDarkMode}
+          toggleSettings={toggleSettings}
+          playButtonSound={playButtonSound}
+        />
       </div>
-      <audio ref={levelUpSoundRef} src="/audio/levelup.mp3" preload="auto" />
-      <audio ref={buttonSoundRef} src="/audio/button.mp3" preload="auto" />
-      {/* Background Music Audio element */}
-      <audio ref={bgMusicRef} src={currentBgMusic} loop preload="auto" />
       {/* Render Pokedex only after sprite is loaded */}
       {currentPokemonInfo.sprite && (
         <Pokedex
@@ -929,8 +600,11 @@ function App() {
       <footer className="global-footer animate-fadein-bottom">
         @lurantys | sf summer 2025
       </footer>
+      <audio ref={levelUpSoundRef} src="/audio/levelup.mp3" preload="auto" />
+      <audio ref={buttonSoundRef} src="/audio/button.mp3" preload="auto" />
+      {/* Background Music Audio element */}
+      <audio ref={bgMusicRef} src={currentBgMusic} loop preload="auto" />
     </div>
   );
 }
-
 export default App;
