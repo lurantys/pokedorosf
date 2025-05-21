@@ -70,17 +70,18 @@ function TodoList({
           {todos.length === 0 && (
             <li
               className="text-gray-400 text-center"
-              style={{width: '100%', marginTop: '1.5rem'}}>
+              style={{width: '100%', marginTop: '2.5rem'}}>
               <div style={{fontSize: 'clamp(0.9rem, 2vw, 1.2rem)', marginBottom: '0.5em'}}>No tasks yet!</div>
               <span
-                aria-label="Mario Star"
+                aria-label="Pokemon GIF"
                 style={{
                   display: 'inline-block',
-                  width: '2.5em',
-                  height: '2.5em',
+                  width: '7.5em', // 3x bigger than before
+                  height: '7.5em',
+                  marginTop: '1.5em',
                 }}
               >
-                <img src="/icons/mariostar.svg" alt="Mario Star" style={{ width: '100%', height: '100%' }} />
+                <img src="https://pa1.aminoapps.com/5799/3e1cd1ebf455f76c2baeaa112a75b6e3ddbba69e_hq.gif" alt="Pokemon GIF" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </span>
             </li>
           )}

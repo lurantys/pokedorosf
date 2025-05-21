@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import './App.css';
-import Pokedex from './Pokedex'; // Import the Pokedex component
-import Badges from './Badges'; // Import the Badges component
+import Pokedex from './Pokedex';
+import Badges from './Badges';
 import TodoList from './TodoList';
 import Timer from './Timer';
 import AuthPage from './AuthPage';
+import { auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const POKEMON_SPRITES_URL = '/pokemonsprites.json';
 
@@ -89,6 +91,9 @@ function App() {
     console.log('Initial background music selected:', initialMusic);
     return initialMusic;
   });
+
+  // New state for authentication
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Save settings whenever they change
   useEffect(() => {
@@ -452,8 +457,20 @@ function App() {
   // Check for guest login flag
   const isGuest = localStorage.getItem('pokedorosf_guest') === 'true';
 
-  if (!isGuest) {
-    return <AuthPage onAuthSuccess={() => window.location.reload()} />;
+  // Listen for Firebase Auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (!isGuest && !isAuthenticated) {
+    return <AuthPage onAuthSuccess={() => setIsAuthenticated(true)} />;
   }
 
   return (
