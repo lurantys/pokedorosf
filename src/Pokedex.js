@@ -57,11 +57,11 @@ const Pokedex = ({ isOpen, togglePokedex, pokemonSpriteUrl, pokedexData, darkMod
 
         {pokedexData.stats && (
           <div className="text-xs mb-2">
-            <strong>Stats:</strong>
+            <strong className="block text-center">Stats:</strong>
             <div className="grid grid-cols-2 gap-1 mt-1">
               {Object.entries(pokedexData.stats).map(([stat, value]) => (
                 <div key={stat} className="flex items-center gap-1">
-                  <span className="w-12 font-bold">{stat.toUpperCase()}:</span>
+                  <span className="w-12 font-bold text-center">{stat.toUpperCase()}:</span>
                   <div className="flex-1 h-2 bg-gray-200 rounded overflow-hidden">
                     <div
                       className="h-full bg-green-500"
@@ -77,8 +77,8 @@ const Pokedex = ({ isOpen, togglePokedex, pokemonSpriteUrl, pokedexData, darkMod
 
         {pokedexData.description && (
           <div className="text-xs">
-            <strong>Description:</strong>
-            <p className="mt-1 leading-relaxed"> 
+            <strong className="block text-center">Description:</strong>
+            <p className="mt-1 leading-relaxed text-center"> 
               {pokedexData.description}
             </p>
           </div>
@@ -107,7 +107,7 @@ const Pokedex = ({ isOpen, togglePokedex, pokemonSpriteUrl, pokedexData, darkMod
       >
         POKEDEX
       </div>
-      <div className={contentClasses}>
+      <div className={`${contentClasses} p-4`}>
         {content}
       </div>
     </div>

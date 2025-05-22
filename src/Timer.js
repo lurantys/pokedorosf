@@ -31,7 +31,8 @@ function Timer({
   toggleSettings,
   playButtonSound,
   isBreak,
-  isRunningState
+  isRunningState,
+  handleLogout
 }) {
   return (
     <div className="flex flex-col items-center gap-4 md:gap-6 w-full max-w-md">
@@ -291,6 +292,14 @@ function Timer({
               />
               <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(cryVolume * 100)}</span>
             </label>
+            {/* Logout Button */}
+            <button
+              onClick={typeof handleLogout === 'function' ? handleLogout : undefined}
+              className="mt-4 w-full py-2 border-2 border-black rounded-lg bg-red-200 hover:bg-red-300 text-[#1e293b] font-semibold shadow-md transition-colors duration-150"
+              style={{ marginTop: '18px' }}
+            >
+              Log Out
+            </button>
           </div>
         </div>
       </div>

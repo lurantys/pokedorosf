@@ -6,7 +6,8 @@ import TodoList from './TodoList';
 import Timer from './Timer';
 import AuthPage from './AuthPage';
 import { auth } from './firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import LoadingScreen from './LoadingScreen';
 
 const POKEMON_SPRITES_URL = '/pokemonsprites.json';
 
@@ -94,6 +95,7 @@ function App() {
 
   // New state for authentication
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true); // New state for loading
 
   // Save settings whenever they change
   useEffect(() => {
@@ -465,9 +467,21 @@ function App() {
       } else {
         setIsAuthenticated(false);
       }
+      setAuthLoading(false); // Set loading to false after check
     });
     return () => unsubscribe();
   }, []);
+
+  // Handler for logging out
+  const handleLogout = async () => {
+    await signOut(auth);
+    localStorage.removeItem('pokedorosf_guest');
+    window.location.reload();
+  };
+
+  if (authLoading) {
+    return <LoadingScreen />;
+  }
 
   if (!isGuest && !isAuthenticated) {
     return <AuthPage onAuthSuccess={() => setIsAuthenticated(true)} />;
@@ -600,6 +614,7 @@ function App() {
           toggleDarkMode={toggleDarkMode}
           toggleSettings={toggleSettings}
           playButtonSound={playButtonSound}
+          handleLogout={handleLogout}
         />
       </div>
       {/* Render Pokedex only after sprite is loaded */}
