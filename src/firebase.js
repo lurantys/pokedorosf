@@ -1,6 +1,6 @@
 // Firebase configuration and initialization
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBM2FZ2l9RTyK3AheX8oZk0k0OvBtQbMQs",
@@ -12,5 +12,17 @@ const firebaseConfig = {
   measurementId: "G-MR93DZ99BZ"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+const auth = getAuth(app);
+
+// Set persistence to LOCAL
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log('Firebase persistence set to LOCAL');
+  })
+  .catch((error) => {
+    console.error("Error setting auth persistence:", error);
+  });
+
+export { auth, firebaseConfig };

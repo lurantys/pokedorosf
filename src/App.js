@@ -5,12 +5,23 @@ import Badges from './Badges';
 import TodoList from './TodoList';
 import Timer from './Timer';
 import AuthPage from './AuthPage';
-import { auth } from './firebase';
+import { auth, firebaseConfig } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import LoadingScreen from './LoadingScreen';
 import PWAInstallPrompt from './PWAInstallPrompt';
+import { getFirestore } from 'firebase/firestore';
+import { setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 const POKEMON_SPRITES_URL = '/pokemonsprites.json';
+
+// Initialize Firestore
+const db = getFirestore();
+
+// Configure Firebase Auth persistence
+setPersistence(auth, browserLocalPersistence)
+  .catch((error) => {
+    console.error("Error setting auth persistence:", error);
+  });
 
 function App() {
   // Timer state
@@ -88,7 +99,7 @@ function App() {
   });
 
   // New state for background music, selected once on component initialization
-  const [currentBgMusic, setCurrentBgMusic] = useState(() => {
+  const [currentBgMusic] = useState(() => {
     const initialMusic = Math.random() < 0.5 ? '/audio/music/background.mp3' : '/audio/music/bg2.mp3';
     console.log('Initial background music selected:', initialMusic);
     return initialMusic;
@@ -116,12 +127,14 @@ function App() {
   // Calculate owned badges based on completed sessions
   const ownedBadges = Array.from({length: 8}, (_, i) => i + 1).filter(badgeNum => completedSessions >= badgeNum * 10);
 
-  // Fetch Pokémon sprites on mount
+  // Fetch Pokémon sprites on mount - only once
   useEffect(() => {
+    let isMounted = true;
     console.log('Fetching Pokemon sprites...');
     fetch(POKEMON_SPRITES_URL)
       .then(res => res.json())
       .then(data => {
+        if (!isMounted) return;
         console.log('Received Pokemon sprites:', data);
         setPokemonSprites(data);
         if (data.length) {
@@ -131,6 +144,10 @@ function App() {
         }
       })
       .catch(error => console.error('Error fetching sprites:', error));
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Set dark mode on mount and update html class
@@ -176,6 +193,7 @@ function App() {
     }
   }, [timeLeft]);
 
+  // Update session count and date when a session is completed
   const handleTimerEnd = () => {
     playLevelUpSound();
     // Send desktop notification
@@ -186,7 +204,7 @@ function App() {
       setStatus('Break Time');
       setTimeLeft(shortBreakDuration * 60);
       document.querySelector('.timer')?.classList.add('break-time');
-      setCompletedSessions(prev => prev + 1); // Only increment after work session
+      setCompletedSessions(prev => prev + 1);
     } else {
       // Start work
       setStatus('Work Time');
@@ -195,7 +213,7 @@ function App() {
       document.querySelector('.timer')?.classList.remove('break-time');
     }
     setIsRunning(true);
-    setHpPercentage(100); // Reset HP at the end of each cycle
+    setHpPercentage(100);
     // Change Pokémon sprite on each cycle
     if (pokemonSprites.length) {
       setCurrentPokemonInfo(pokemonSprites[Math.floor(Math.random() * pokemonSprites.length)]);
@@ -457,33 +475,49 @@ function App() {
     });
   };
 
-  // Check for guest login flag
-  const isGuest = localStorage.getItem('pokedorosf_guest') === 'true';
-
   // Listen for Firebase Auth state changes
   useEffect(() => {
+    let isMounted = true;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!isMounted) return;
+      console.log('Auth state changed:', user); // Debug log
       if (user) {
         setIsAuthenticated(true);
+        // If it's a guest user, set the guest flag
+        if (user.isAnonymous) {
+          localStorage.setItem('pokedorosf_guest', 'true');
+        }
       } else {
         setIsAuthenticated(false);
+        localStorage.removeItem('pokedorosf_guest');
       }
-      setAuthLoading(false); // Set loading to false after check
+      setAuthLoading(false);
     });
-    return () => unsubscribe();
+
+    // Cleanup subscription
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
   }, []);
 
   // Handler for logging out
   const handleLogout = async () => {
-    await signOut(auth);
-    localStorage.removeItem('pokedorosf_guest');
-    window.location.reload();
+    try {
+      await signOut(auth);
+      localStorage.removeItem('pokedorosf_guest');
+      window.location.reload();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   if (authLoading) {
     return <LoadingScreen />;
   }
 
+  // Check both Firebase auth and guest status
+  const isGuest = localStorage.getItem('pokedorosf_guest') === 'true';
   if (!isGuest && !isAuthenticated) {
     return <AuthPage onAuthSuccess={() => setIsAuthenticated(true)} />;
   }

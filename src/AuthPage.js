@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { auth } from './firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, setPersistence, browserLocalPersistence, signInAnonymously } from 'firebase/auth';
 
 function AuthPage({ onAuthSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
@@ -9,6 +9,8 @@ function AuthPage({ onAuthSuccess }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loginBounce, setLoginBounce] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [rememberMe, setRememberMe] = useState(false);
   const musicRef = useRef(null);
   // Initialize and play login music with fade-in effect
   useEffect(() => {
@@ -21,21 +23,31 @@ function AuthPage({ onAuthSuccess }) {
     audio.loop = true;
     
     // Play the audio and implement fade-in
-    audio.play().then(() => {
-      // Fade in from 0 to 0.5 (50%)
-      const fadeInInterval = setInterval(() => {
-        // Gradually increase volume up to target (50%)
-        if (audio.volume < 0.05) {
-          audio.volume += 0.02;
-        } else {
-          // When volume reaches target, set exact value and clear interval
-          audio.volume = 0.05;
-          clearInterval(fadeInInterval);
-        }
-      }, 50); // 50ms interval for smooth fade-in (takes ~1.25 seconds total)
-    }).catch(error => {
-      console.error('Error playing login music:', error);
-    });
+    const playAudio = async () => {
+      try {
+        await audio.play();
+        // Fade in from 0 to 0.5 (50%)
+        const fadeInInterval = setInterval(() => {
+          // Gradually increase volume up to target (50%)
+          if (audio.volume < 0.05) {
+            audio.volume += 0.02;
+          } else {
+            // When volume reaches target, set exact value and clear interval
+            audio.volume = 0.05;
+            clearInterval(fadeInInterval);
+          }
+        }, 50); // 50ms interval for smooth fade-in (takes ~1.25 seconds total)
+      } catch (error) {
+        console.error('Error playing login music:', error);
+      }
+    };
+
+    // Add click event listener to start audio
+    const handleClick = () => {
+      playAudio();
+      document.removeEventListener('click', handleClick);
+    };
+    document.addEventListener('click', handleClick);
     
     // Clean up function
     return () => {
@@ -44,8 +56,31 @@ function AuthPage({ onAuthSuccess }) {
         musicRef.current.pause();
         musicRef.current = null;
       }
+      document.removeEventListener('click', handleClick);
     };
   }, []);
+
+  // Password strength checker
+  useEffect(() => {
+    if (!password) {
+      setPasswordStrength(0);
+      return;
+    }
+    
+    let strength = 0;
+    // Length check
+    if (password.length >= 8) strength += 1;
+    // Contains number
+    if (/\d/.test(password)) strength += 1;
+    // Contains lowercase
+    if (/[a-z]/.test(password)) strength += 1;
+    // Contains uppercase
+    if (/[A-Z]/.test(password)) strength += 1;
+    // Contains special char
+    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+    
+    setPasswordStrength(strength);
+  }, [password]);
 
   // If already logged in as guest, do not show AuthPage
   if (localStorage.getItem('pokedorosf_guest') === 'true') {
@@ -88,16 +123,18 @@ function AuthPage({ onAuthSuccess }) {
     e.preventDefault();
     setError('');
     setLoading(true);
+    
     if (!email || !password) {
       setError('Please fill in all fields.');
       setLoading(false);
-      setLoginBounce(false); // reset
+      setLoginBounce(false);
       setTimeout(() => {
         setLoginBounce(true);
         setTimeout(() => setLoginBounce(false), 400);
-      }, 0); // Use setTimeout 0 to force reflow for animation retrigger
+      }, 0);
       return;
     }
+
     try {
       let userCredential;
       if (mode === 'login') {
@@ -105,8 +142,8 @@ function AuthPage({ onAuthSuccess }) {
       } else {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
       }
+      
       setLoading(false);
-      // Fade out music before completing auth
       fadeOutMusicAndComplete({ email: userCredential.user.email, guest: false });
     } catch (err) {
       setLoading(false);
@@ -114,17 +151,20 @@ function AuthPage({ onAuthSuccess }) {
     }
   };
 
-  const handleGuest = () => {
+  const handleGuest = async () => {
     setError('');
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const userCredential = await signInAnonymously(auth);
       setLoading(false);
-      // Save guest state to localStorage
       localStorage.setItem('pokedorosf_guest', 'true');
-      // Reload the page to show the app
-      window.location.reload();
-    }, 500);
+      fadeOutMusicAndComplete({ email: 'guest', guest: true });
+    } catch (err) {
+      setLoading(false);
+      setError(err.message.replace('Firebase: ', ''));
+    }
   };
+
   const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
@@ -137,7 +177,9 @@ function AuthPage({ onAuthSuccess }) {
       setLoading(false);
       setError(err.message.replace('Firebase: ', ''));
     }
-  };  return (
+  };
+
+  return (
     <div 
       className="flex flex-col items-center justify-center min-h-screen w-full transition-colors duration-300 relative fixed-position"
       style={{
@@ -233,7 +275,48 @@ function AuthPage({ onAuthSuccess }) {
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               disabled={loading}
             />
+            {mode === 'signup' && password && (
+              <div className="mt-2">
+                <div className="flex gap-1 h-1">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 rounded-full transition-colors duration-300 ${
+                        i < passwordStrength
+                          ? passwordStrength <= 2
+                            ? 'bg-red-500'
+                            : passwordStrength <= 3
+                            ? 'bg-yellow-500'
+                            : 'bg-green-500'
+                          : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs mt-1 text-gray-500 dark:text-gray-400">
+                  {passwordStrength <= 2
+                    ? 'Weak password'
+                    : passwordStrength <= 3
+                    ? 'Medium strength'
+                    : 'Strong password'}
+                </p>
+              </div>
+            )}
           </div>
+          {mode === 'login' && (
+            <div className="flex items-center mt-2">
+              <input
+                type="checkbox"
+                id="remember-me"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="remember-me" className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                Remember me
+              </label>
+            </div>
+          )}
           {error && <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm text-center mb-1 animate-shake error-shadow">{error}</div>}
           <button
             type="submit"
