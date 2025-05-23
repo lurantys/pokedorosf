@@ -1,25 +1,35 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "PokeDoro",
+  "name": "PokeDoro - Pokemon Themed Pomodoro Timer",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "icons/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "icons/logo.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
-      "src": "logo512.png",
+      "src": "icons/logo.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
-  ],
-  "start_url": ".",
+  ],  "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#f7fee7",
+  "background_color": "#f7fee7",
+  "description": "A Pokemon-themed Pomodoro timer to help you stay focused and productive",
+  "screenshots": [
+    {
+      "src": "icons/screenshot.png",
+      "type": "image/png",
+      "sizes": "540x720"
+    }
+  ]
 }

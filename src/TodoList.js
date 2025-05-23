@@ -46,6 +46,8 @@ function TodoList({
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const canvasRef = useRef(null);
+  const eatSoundRef = useRef();
+  const gameOverSoundRef = useRef();
   useEffect(() => {
     const styleId = 'game-animations';
     if (!document.getElementById(styleId)) {
@@ -201,16 +203,29 @@ function TodoList({
       x: (snake[0].x + nextDirection.x + GRID_WIDTH) % GRID_WIDTH,
       y: (snake[0].y + nextDirection.y + GRID_HEIGHT) % GRID_HEIGHT
     };
+    console.log('updateGame', { head, food });
     for (let i = 0; i < snake.length; i++) {
       if (snake[i].x === head.x && snake[i].y === head.y) {
+        console.log('Game over: snake collided with itself.');
         handleGameOver();
         return;
       }
     }
     snake.unshift(head);
-    if (food && head.x === food.x && head.y === food.y) {
+    if (
+      food &&
+      Number.isInteger(head.x) && Number.isInteger(head.y) &&
+      Number.isInteger(food.x) && Number.isInteger(food.y) &&
+      head.x === food.x && head.y === food.y
+    ) {
+      console.log('Ate food!', { head, food, eatSoundRef: eatSoundRef.current });
       gameRef.current.food = generateFood(snake);
       setScore(prevScore => prevScore + 1);
+      if (eatSoundRef.current) {
+        eatSoundRef.current.currentTime = 0;
+        eatSoundRef.current.volume = 1;
+        eatSoundRef.current.play().catch((e) => console.log('Audio play error', e));
+      }
     } else {
       snake.pop();
     }
@@ -219,6 +234,10 @@ function TodoList({
   const handleGameOver = () => {
     gameRef.current.isRunning = false;
     setGameOver(true);
+    if (gameOverSoundRef.current) {
+      gameOverSoundRef.current.currentTime = 0;
+      gameOverSoundRef.current.play().catch(() => {});
+    }
   };
 
   const restartGame = () => {
@@ -283,6 +302,17 @@ function TodoList({
       ctx.fillText('Press Space to Restart', canvas.width / 2, canvas.height / 2 + 30);
     }
   };
+
+  useEffect(() => {
+    if (showGame) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showGame]);
 
   return (
     <>
@@ -427,7 +457,7 @@ function TodoList({
                 ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
                 : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
             }}>
-            <div className="mb-4 text-lg font-semibold text-center">Snake Game</div>
+            <div className="mb-4 text-lg font-semibold text-center">Ekans Game !</div>
             <div className="flex justify-center">
               <canvas
                 ref={canvasRef}
@@ -462,6 +492,8 @@ function TodoList({
               Use arrow keys to help Ekans eat Togepi!
             </div>
           </div>
+          <audio ref={eatSoundRef} src="/audio/snake/music_food.mp3" preload="auto" />
+          <audio ref={gameOverSoundRef} src="/audio/button.mp3" preload="auto" />
         </div>
       )}
     </>

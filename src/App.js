@@ -8,6 +8,7 @@ import AuthPage from './AuthPage';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import LoadingScreen from './LoadingScreen';
+import PWAInstallPrompt from './PWAInstallPrompt';
 
 const POKEMON_SPRITES_URL = '/pokemonsprites.json';
 
@@ -493,7 +494,13 @@ function App() {
       transition-colors duration-300 font-sans py-4 md:py-8
       w-full max-w-full
       ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}
-    `} style={{ minWidth: 0 }}>
+    `} style={{ 
+      minWidth: 0,
+      minHeight: '1000px'
+    }}>
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
+      
       {/* Top-left clock/date container, styled like badges/pokedex */}
       <div
         className={`

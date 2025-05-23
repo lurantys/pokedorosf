@@ -137,16 +137,18 @@ function AuthPage({ onAuthSuccess }) {
       setLoading(false);
       setError(err.message.replace('Firebase: ', ''));
     }
-  };
-  return (
+  };  return (
     <div 
-      className="flex flex-col items-center justify-center min-h-screen w-full transition-colors duration-300 relative"
+      className="flex flex-col items-center justify-center min-h-screen w-full transition-colors duration-300 relative fixed-position"
       style={{
         backgroundImage: 'url(/icons/pokemonbg.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
+        backgroundAttachment: 'fixed',
+        height: '100%',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch' // For smooth scrolling on iOS
       }}
     >
       {/* Add a semi-transparent overlay to ensure content visibility */}
@@ -192,25 +194,42 @@ function AuthPage({ onAuthSuccess }) {
           onSubmit={handleSubmit}
           className={`flex flex-col gap-4 mb-2 transition-opacity duration-300`}
           key={mode}
-        >
-          <input
+        >          <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             className="w-full px-3 py-3 border-2 border-black rounded-lg bg-[#f1f5f9] dark:bg-[#23272e] text-[#1e293b] dark:text-[#e0e7ef] focus:outline-none focus:ring-2 focus:ring-black focus:shadow-input-glow placeholder-gray-400 dark:placeholder-gray-500 transition-all text-base"
-            style={{ lineHeight: 1.2, minHeight: '44px', fontSize: '1rem' }}
+            style={{ 
+              lineHeight: 1.2, 
+              minHeight: '44px', 
+              fontSize: '1rem',
+              WebkitAppearance: 'none',
+              MozAppearance: 'none',
+              appearance: 'none',
+              boxShadow: 'none',
+              borderRadius: '8px'
+            }}
             autoComplete="username"
             disabled={loading}
+            inputMode="email"
           />
-          <div className="relative">
-            <input
+          <div className="relative">            <input
               type="password"
               placeholder="Password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               className={`w-full px-3 py-3 border-2 border-black rounded-lg bg-[#f1f5f9] dark:bg-[#23272e] text-[#1e293b] dark:text-[#e0e7ef] focus:outline-none focus:ring-2 focus:ring-black focus:shadow-input-glow placeholder-gray-400 dark:placeholder-gray-500 transition-all text-base${error ? ' animate-shake' : ''}`}
-              style={{ lineHeight: 1.2, minHeight: '44px', fontSize: '1rem' }}
+              style={{ 
+                lineHeight: 1.2, 
+                minHeight: '44px', 
+                fontSize: '1rem',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                appearance: 'none',
+                boxShadow: 'none',
+                borderRadius: '8px'
+              }}
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               disabled={loading}
             />

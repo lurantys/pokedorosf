@@ -15,6 +15,9 @@ html, body, #root {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  width: 100%;
+  overscroll-behavior: none;
 }
 
 /* Ensure all elements inherit the custom font by default */
@@ -359,4 +362,163 @@ code {
   padding: 12px;
   display: flex;
   flex-direction: column;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+    padding: 8px;
+  }
+
+  .timer-container {
+    width: 100% !important;
+    margin-bottom: 16px;
+    border-radius: 12px !important;
+  }
+
+  .pokedex-container {
+    width: 100% !important;
+    border-radius: 12px !important;
+    max-height: 200px !important;
+    overflow-y: auto;
+  }
+
+  .badges-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    margin-top: 16px;
+    transform: none !important;
+  }
+
+  .todo-list-fixed {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    margin-top: 16px;
+    margin-bottom: 16px;
+    transform: none !important;
+  }
+
+  .settings-container {
+    width: 90% !important;
+    max-width: 350px !important;
+  }
+  
+  /* Fix for fixed positioning issues on mobile browsers */
+  .fixed-position {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    max-height: -webkit-fill-available; /* iOS Safari fix */
+  }
+
+  /* Better touch targets for mobile */
+  button, 
+  input[type="range"], 
+  input[type="checkbox"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Fix iOS input styling */
+  input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+}
+
+/* Handle notches and safe areas for modern mobile devices */
+@supports (padding: env(safe-area-inset-top)) {
+  .app-container {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* PWA specific styles */
+@media all and (display-mode: standalone) {
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+  
+  /* Hide browser UI elements when running as PWA */
+  .pwa-only {
+    display: block;
+  }
+  
+  .browser-only {
+    display: none;
+  }
+}
+
+/* Add to home screen prompt styling */
+.install-prompt {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Touch device improvements */
+@media (hover: none) {
+  button {
+    /* Prevent double-tap zoom on iOS */
+    touch-action: manipulation;
+  }
+
+  /* Disable hover effects that don't work well on touch devices */
+  button:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background-color: inherit;
+  }
+
+  /* Add tap highlight color for better feedback on touch */
+  button, 
+  a, 
+  .clickable {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Active states for touch feedback instead of hover */
+  button:active, 
+  a:active, 
+  .clickable:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+    transition: transform 0.1s, opacity 0.1s;
+  }
+}
+
+/* Hide scrollbars but keep functionality */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Fix for content shifting when switching between pages with and without scrollbars */
+html {
+  overflow-y: scroll;
 }
