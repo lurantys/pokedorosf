@@ -25,11 +25,11 @@ function AuthPage({ onAuthSuccess }) {
       // Fade in from 0 to 0.5 (50%)
       const fadeInInterval = setInterval(() => {
         // Gradually increase volume up to target (50%)
-        if (audio.volume < 0.14) {
+        if (audio.volume < 0.05) {
           audio.volume += 0.02;
         } else {
           // When volume reaches target, set exact value and clear interval
-          audio.volume = 0.15;
+          audio.volume = 0.05;
           clearInterval(fadeInInterval);
         }
       }, 50); // 50ms interval for smooth fade-in (takes ~1.25 seconds total)
