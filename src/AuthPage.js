@@ -151,17 +151,16 @@ function AuthPage({ onAuthSuccess }) {
     }
   };
 
-  const handleGuest = async () => {
+  const handleGuest = () => {
     setError('');
     setLoading(true);
     try {
-      const userCredential = await signInAnonymously(auth);
-      setLoading(false);
       localStorage.setItem('pokedorosf_guest', 'true');
+      setLoading(false);
       fadeOutMusicAndComplete({ email: 'guest', guest: true });
     } catch (err) {
       setLoading(false);
-      setError(err.message.replace('Firebase: ', ''));
+      setError('Failed to start guest mode. Please try again.');
     }
   };
 

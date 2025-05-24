@@ -83,6 +83,12 @@ function App() {
     return saved ? parseInt(saved) : 0;
   });
 
+  // Add session count state
+  const [sessionCount, setSessionCount] = useState(() => {
+    const saved = localStorage.getItem('sessionCount');
+    return saved ? parseInt(saved) : 0;
+  });
+
   // Add new state for sound controls
   const [isMuted, setIsMuted] = useState(() => localStorage.getItem('isMuted') === 'true');
   const [musicVolume, setMusicVolume] = useState(() => {
@@ -212,9 +218,15 @@ function App() {
     if (!isBreakTime) {
       // Start break
       setStatus('Break Time');
-      setTimeLeft(shortBreakDuration * 60);
+      const breakDuration = sessionCount % 3 === 0 ? longBreakDuration : shortBreakDuration;
+      setTimeLeft(breakDuration * 60);
       document.querySelector('.timer')?.classList.add('break-time');
       setCompletedSessions(prev => prev + 1);
+      setSessionCount(prev => {
+        const newCount = prev + 1;
+        localStorage.setItem('sessionCount', newCount.toString());
+        return newCount;
+      });
     } else {
       // Start work
       setStatus('Work Time');
@@ -491,15 +503,10 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!isMounted) return;
       console.log('Auth state changed:', user); // Debug log
-      if (user) {
+      if (user && !user.isAnonymous) { // Only handle non-guest users
         setIsAuthenticated(true);
-        // If it's a guest user, set the guest flag
-        if (user.isAnonymous) {
-          localStorage.setItem('pokedorosf_guest', 'true');
-        }
-      } else {
+      } else if (!user && !localStorage.getItem('pokedorosf_guest')) {
         setIsAuthenticated(false);
-        localStorage.removeItem('pokedorosf_guest');
       }
       setAuthLoading(false);
     });
@@ -514,8 +521,11 @@ function App() {
   // Handler for logging out
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      localStorage.removeItem('pokedorosf_guest');
+      if (localStorage.getItem('pokedorosf_guest')) {
+        localStorage.removeItem('pokedorosf_guest');
+      } else {
+        await signOut(auth);
+      }
       window.location.reload();
     } catch (error) {
       console.error('Error signing out:', error);
@@ -556,7 +566,7 @@ function App() {
     return <LoadingScreen />;
   }
 
-  // Check both Firebase auth and guest status
+  // Check guest status first, then Firebase auth
   const isGuest = localStorage.getItem('pokedorosf_guest') === 'true';
   if (!isGuest && !isAuthenticated) {
     return <AuthPage onAuthSuccess={() => setIsAuthenticated(true)} />;
