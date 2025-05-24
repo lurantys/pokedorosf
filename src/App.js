@@ -109,6 +109,16 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true); // New state for loading
 
+  // Add new state for streak tracking
+  const [currentStreak, setCurrentStreak] = useState(() => {
+    const saved = localStorage.getItem('currentStreak');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [lastActiveDate, setLastActiveDate] = useState(() => {
+    const saved = localStorage.getItem('lastActiveDate');
+    return saved ? saved : null;
+  });
+
   // Save settings whenever they change
   useEffect(() => {
     localStorage.setItem('workDuration', workDuration.toString());
@@ -512,6 +522,36 @@ function App() {
     }
   };
 
+  // Update streak on mount
+  useEffect(() => {
+    const today = new Date().toDateString();
+    
+    if (lastActiveDate) {
+      const lastDate = new Date(lastActiveDate);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (lastDate.toDateString() === yesterday.toDateString()) {
+        // If last active was yesterday, increment streak
+        setCurrentStreak(prev => prev + 1);
+      } else if (lastDate.toDateString() !== today) {
+        // If last active was not today or yesterday, reset streak
+        setCurrentStreak(1);
+      }
+    } else {
+      // First time using the app
+      setCurrentStreak(1);
+    }
+    
+    setLastActiveDate(today);
+  }, []);
+
+  // Save streak data whenever it changes
+  useEffect(() => {
+    localStorage.setItem('currentStreak', currentStreak.toString());
+    localStorage.setItem('lastActiveDate', lastActiveDate);
+  }, [currentStreak, lastActiveDate]);
+
   if (authLoading) {
     return <LoadingScreen />;
   }
@@ -573,6 +613,7 @@ function App() {
           {formatDate(currentTime)}
         </div>
       </div>
+
       {/* Floating To-Do List Container below the clock/date, left-aligned */}
       <TodoList
         todos={todos}
@@ -583,7 +624,9 @@ function App() {
         removeTodo={removeTodo}
         removingIdx={removingIdx}
         isDarkMode={isDarkMode}
+        currentStreak={currentStreak}
       />
+
       {/* Badges sliding component at the top right */}
       <Badges
         isOpen={isBadgesOpen}
@@ -603,9 +646,9 @@ function App() {
         }}
       />
       {/* Large centered logo at the top of the page */}
-      <img 
-        src="/icons/logo.png" 
-        alt="PokeDoro Logo" 
+      <img
+        src="/icons/logo.png"
+        alt="PokeDoro Logo"
         className="mx-auto block mb-8 w-44 md:w-64 h-auto absolute top-4 md:top-8 animate-fadein-top"
         style={{ maxWidth: '80vw' }}
       />

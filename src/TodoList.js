@@ -39,7 +39,8 @@ function TodoList({
   toggleTodo,
   removeTodo,
   removingIdx,
-  isDarkMode
+  isDarkMode,
+  currentStreak
 }) {
   const [clickCount, setClickCount] = useState(0);
   const [showGame, setShowGame] = useState(false);
@@ -371,65 +372,94 @@ function TodoList({
               Add
             </button>
           </form>
-          <ul className="flex-1 overflow-y-auto max-h-full text-left pr-1" style={{minHeight: 0}}>
-            {todos.length === 0 && (
-              <li
-                className="text-gray-400 text-center"
-                style={{width: '100%', marginTop: '2.5rem'}}>
-                <div style={{fontSize: 'clamp(0.9rem, 2vw, 1.2rem)', marginBottom: '0.5em'}}>No tasks yet!</div>
-                <span
-                  aria-label="Pokemon GIF"
-                  style={{
-                    display: 'inline-block',
-                    width: '7.5em',
-                    height: '7.5em',
-                    marginTop: '1.5em',
-                  }}
-                >
-                  <img
-                    src="https://pa1.aminoapps.com/5799/3e1cd1ebf455f76c2baeaa112a75b6e3ddbba69e_hq.gif"
-                    alt="Pokemon GIF"
+          
+          {/* Container for task list and empty state - takes up remaining space */}
+          <div className="flex-1 overflow-y-auto text-left pr-1" style={{minHeight: '250px', flexGrow: 1, flexShrink: 0}}>
+            <ul className="">
+              {todos.length === 0 && (
+                <li
+                  className="text-gray-400 text-center"
+                  style={{width: '100%', marginTop: '2.5rem'}}>
+                  <div style={{fontSize: 'clamp(0.9rem, 2vw, 1.2rem)', marginBottom: '0.5em'}}>No tasks yet!</div>
+                  <span
+                    aria-label="Pokemon GIF"
                     style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      cursor: 'pointer',
-                      transition: 'transform 0.1s ease-in-out',
+                      display: 'inline-block',
+                      width: '7.5em',
+                      height: '7.5em',
+                      marginTop: '1.5em',
                     }}
-                    onClick={handleGifClick}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                    onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
-                    onMouseUp={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                  />
-                </span>
-              </li>
-            )}
-            {todos.map((todo, idx) => (
-              <li
-                key={idx}
-                className={`flex items-center justify-between py-1 group ${removingIdx === idx ? 'todo-fade-out' : todo._justAdded ? 'todo-fade' : ''}`}
-              >
-                <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
-                  <input
-                    type="checkbox"
-                    checked={todo.done}
-                    onChange={() => toggleTodo(idx)}
-                    className="accent-green-500 w-4 h-4"
-                  />
-                  <span className={`flex-1 truncate ${todo.done ? 'line-through text-gray-400' : ''}`}>{todo.text}</span>
-                </label>
-                <button
-                  onClick={() => removeTodo(idx)}
-                  className="ml-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Remove"
-                  type="button"
+                  >
+                    <img
+                      src="https://pa1.aminoapps.com/5799/3e1cd1ebf455f76c2baeaa112a75b6e3ddbba69e_hq.gif"
+                      alt="Pokemon GIF"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        cursor: 'pointer',
+                        transition: 'transform 0.1s ease-in-out',
+                      }}
+                      onClick={handleGifClick}
+                      onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                      onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                      onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
+                      onMouseUp={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                    />
+                  </span>
+                </li>
+              )}
+              {todos.map((todo, idx) => (
+                <li
+                  key={idx}
+                  className={`flex items-center justify-between py-1 group ${removingIdx === idx ? 'todo-fade-out' : todo._justAdded ? 'todo-fade' : ''}`}
                 >
-                  ✕
-                </button>
-              </li>
-            ))}
-          </ul>
+                  <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={todo.done}
+                      onChange={() => toggleTodo(idx)}
+                      className="accent-green-500 w-4 h-4"
+                    />
+                    <span className={`flex-1 truncate ${todo.done ? 'line-through text-gray-400' : ''}`}>{todo.text}</span>
+                  </label>
+                  <button
+                    onClick={() => removeTodo(idx)}
+                    className="ml-2 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Remove"n                    type="button"
+                  >
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Streak display inside todo list container, below task list */}
+          <div className={`
+            streak-display text-center relative border-4 border-black mt-4
+            ${isDarkMode ? 'bg-[#1f2937] text-[#d1d5db]' : 'bg-[#f7fee7] text-[#374151]'}
+          `}
+          style={{
+            borderRadius: '0',
+            boxShadow: isDarkMode
+              ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
+              : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
+            padding: '8px 16px',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 'auto',
+          }}>
+            <div style={{ fontSize: 'clamp(1rem, 3vw, 1.2rem)', fontWeight: 'bold', letterSpacing: '1px' }}>
+              {currentStreak} Day{currentStreak !== 1 ? 's' : ''}
+            </div>
+            <div style={{ fontSize: 'clamp(0.7rem, 1.5vw, 0.9rem)', marginTop: '2px' }}>
+              Streak
+            </div>
+          </div>
         </div>
       </div>
       {showGame && (
