@@ -32,7 +32,9 @@ function Timer({
   playButtonSound,
   isBreak,
   isRunningState,
-  handleLogout
+  handleLogout,
+  dailyGoal,
+  setDailyGoal
 }) {
   return (
     <div className="flex flex-col items-center gap-4 md:gap-6 w-full max-w-md">
@@ -198,10 +200,12 @@ function Timer({
                   }
                 }}
                 className={
-                  `w-16 px-2 py-1 border ` +
-                  (isDarkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900')
+                  `flex-grow w-20 px-2 py-1 border-2 border-black rounded focus:outline-none focus:ring-2 focus:ring-black focus:shadow-input-glow
+                  ${isDarkMode ? 'bg-gray-800 text-gray-100 placeholder-gray-400' : 'bg-white text-gray-900 placeholder-gray-500'}
+                  `
                 }
-              /> min
+                style={{ maxWidth: '80px'}}
+              />
             </label>
             <label className="flex items-center justify-between">
               <span>Short Break:</span>
@@ -209,7 +213,7 @@ function Timer({
                 type="number" 
                 value={shortBreakDuration}
                 min="1" 
-                max="30"
+                max="15"
                 onChange={(e) => {
                   const newDuration = Number(e.target.value);
                   setShortBreakDuration(newDuration);
@@ -219,79 +223,107 @@ function Timer({
                   }
                 }}
                 className={
-                  `w-16 px-2 py-1 border ` +
-                  (isDarkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900')
+                  `flex-grow w-20 px-2 py-1 border-2 border-black rounded focus:outline-none focus:ring-2 focus:ring-black focus:shadow-input-glow
+                  ${isDarkMode ? 'bg-gray-800 text-gray-100 placeholder-gray-400' : 'bg-white text-gray-900 placeholder-gray-500'}
+                  `
                 }
-              /> min
+                 style={{ maxWidth: '80px'}}
+              />
             </label>
             <label className="flex items-center justify-between">
               <span>Long Break:</span>
               <input 
                 type="number" 
                 value={longBreakDuration}
-                min="1" 
-                max="60"
+                min="5" 
+                max="30"
                 onChange={(e) => {
                   const newDuration = Number(e.target.value);
                   setLongBreakDuration(newDuration);
+                  if (!isRunning && isBreakTime) {
+                    setMinutes(newDuration);
+                    setTimeLeft(newDuration * 60);
+                  }
                 }}
-                className={
-                  `w-16 px-2 py-1 border ` +
-                  (isDarkMode ? 'bg-gray-800 border-gray-600 text-gray-100' : 'bg-white border-gray-300 text-gray-900')
+                 className={
+                  `flex-grow w-20 px-2 py-1 border-2 border-black rounded focus:outline-none focus:ring-2 focus:ring-black focus:shadow-input-glow
+                  ${isDarkMode ? 'bg-gray-800 text-gray-100 placeholder-gray-400' : 'bg-white text-gray-900 placeholder-gray-500'}
+                  `
                 }
-              /> min
-            </label>
-            <div className="mt-4 mb-2 font-semibold">Sound Settings</div>
-            <label className="flex items-center gap-2 mb-2">
-              <input
-                type="checkbox"
-                checked={isMuted}
-                onChange={e => setIsMuted(e.target.checked)}
+                 style={{ maxWidth: '80px'}}
               />
-              <span>Mute All Sounds</span>
             </label>
-            <label className="flex items-center justify-between mb-2 gap-2">
-              <span style={{ minWidth: '90px' }}>Music Volume:</span>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={musicVolume}
-                disabled={isMuted}
-                onChange={e => setMusicVolume(parseFloat(e.target.value))}
-                style={{ width: '120px', flex: 1 }}
+
+            {/* New: Daily Goal Input */}
+            <label className="flex items-center justify-between">
+              <span>Daily Goal:</span>
+              <input 
+                type="number" 
+                value={dailyGoal}
+                min="1" 
+                onChange={(e) => setDailyGoal(Number(e.target.value))}
+                 className={
+                  `flex-grow w-20 px-2 py-1 border-2 border-black rounded focus:outline-none focus:ring-2 focus:ring-black focus:shadow-input-glow
+                  ${isDarkMode ? 'bg-gray-800 text-gray-100 placeholder-gray-400' : 'bg-white text-gray-900 placeholder-gray-500'}
+                  `
+                }
+                 style={{ maxWidth: '80px'}}
               />
-              <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(musicVolume * 100)}</span>
             </label>
-            <label className="flex items-center justify-between mb-2 gap-2">
-              <span style={{ minWidth: '90px' }}>Effects Volume:</span>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={effectsVolume}
-                disabled={isMuted}
-                onChange={e => setEffectsVolume(parseFloat(e.target.value))}
-                style={{ width: '120px', flex: 1 }}
-              />
-              <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(effectsVolume * 100)}</span>
-            </label>
-            <label className="flex items-center justify-between mb-2 gap-2">
-              <span style={{ minWidth: '90px' }}>Cry Volume:</span>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={cryVolume}
-                disabled={isMuted}
-                onChange={e => setCryVolume(parseFloat(e.target.value))}
-                style={{ width: '120px', flex: 1 }}
-              />
-              <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(cryVolume * 100)}</span>
-            </label>
+
+            <div className="sound-settings mt-4 pt-4 border-t-2 border-gray-300 flex flex-col gap-2">
+              <label className="flex items-center justify-between">
+                <span>Mute All Sound:</span>
+                <input 
+                  type="checkbox" 
+                  checked={isMuted}
+                  onChange={(e) => setIsMuted(e.target.checked)}
+                  className="form-checkbox h-5 w-5 text-blue-600"
+                />
+              </label>
+              <label className="flex items-center justify-between mb-2 gap-2">
+                <span style={{ minWidth: '90px' }}>Music Volume:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={musicVolume}
+                  disabled={isMuted}
+                  onChange={e => setMusicVolume(parseFloat(e.target.value))}
+                  style={{ width: '120px', flex: 1 }}
+                />
+                <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(musicVolume * 100)}</span>
+              </label>
+              <label className="flex items-center justify-between mb-2 gap-2">
+                <span style={{ minWidth: '90px' }}>Effects Volume:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={effectsVolume}
+                  disabled={isMuted}
+                  onChange={e => setEffectsVolume(parseFloat(e.target.value))}
+                  style={{ width: '120px', flex: 1 }}
+                />
+                <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(effectsVolume * 100)}</span>
+              </label>
+              <label className="flex items-center justify-between mb-2 gap-2">
+                <span style={{ minWidth: '90px' }}>Cry Volume:</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={cryVolume}
+                  disabled={isMuted}
+                  onChange={e => setCryVolume(parseFloat(e.target.value))}
+                  style={{ width: '120px', flex: 1 }}
+                />
+                <span style={{ width: '32px', textAlign: 'right' }}>{Math.round(cryVolume * 100)}</span>
+              </label>
+            </div>
             {/* Logout Button */}
             <button
               onClick={typeof handleLogout === 'function' ? handleLogout : undefined}

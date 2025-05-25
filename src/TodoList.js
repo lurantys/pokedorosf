@@ -40,7 +40,9 @@ function TodoList({
   removeTodo,
   removingIdx,
   isDarkMode,
-  currentStreak
+  currentStreak,
+  dailyGoal,
+  sessionsToday
 }) {
   const [clickCount, setClickCount] = useState(0);
   const [showGame, setShowGame] = useState(false);

@@ -85,6 +85,11 @@ function App() {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [lastActiveDate, setLastActiveDate] = useState(null);
 
+  // New: Daily Goal state
+  const [dailyGoal, setDailyGoal] = useState(5); // Default daily goal
+  const [sessionsToday, setSessionsToday] = useState(0);
+  const [lastGoalResetDate, setLastGoalResetDate] = useState(null);
+
   // Remove all localStorage effects
   useEffect(() => {
     if (isDarkMode) {
@@ -169,6 +174,7 @@ function App() {
       setCompletedSessions(prev => prev + 1);
       setSessionCount(prev => {
         const newCount = prev + 1;
+        setSessionsToday(prev => prev + 1);
         return newCount;
       });
     } else {
@@ -560,6 +566,61 @@ function App() {
     }
   };
 
+  // --- Firestore: Save settings ---
+  useEffect(() => {
+    if (!isAuthenticated || localStorage.getItem('pokedorosf_guest') === 'true') return;
+    updateUserData(auth.currentUser.uid, {
+      settings: {
+        workDuration,
+        shortBreakDuration,
+        longBreakDuration,
+        isDarkMode,
+        isMuted,
+        musicVolume,
+        effectsVolume,
+        cryVolume,
+        dailyGoal,
+      }
+    });
+  }, [workDuration, shortBreakDuration, longBreakDuration, isDarkMode, isMuted, musicVolume, effectsVolume, cryVolume, dailyGoal, isAuthenticated]);
+
+  // --- Firestore: Save daily goal state ---
+  useEffect(() => {
+    if (!isAuthenticated || localStorage.getItem('pokedorosf_guest') === 'true') return;
+    updateUserData(auth.currentUser.uid, {
+      dailyGoal: {
+        goal: dailyGoal,
+        sessionsToday: sessionsToday,
+        lastResetDate: lastGoalResetDate,
+      },
+    });
+  }, [dailyGoal, sessionsToday, lastGoalResetDate, isAuthenticated]);
+
+  // --- LocalStorage fallback for guests only ---
+  useEffect(() => {
+    if (isAuthenticated && localStorage.getItem('pokedorosf_guest') !== 'true') return;
+    localStorage.setItem('workDuration', workDuration.toString());
+    localStorage.setItem('lastActiveDate', lastActiveDate);
+  }, [currentStreak, lastActiveDate, isAuthenticated]);
+
+  // --- LocalStorage fallback for guests only (Daily Goal) ---
+  useEffect(() => {
+    if (isAuthenticated && localStorage.getItem('pokedorosf_guest') !== 'true') return;
+    localStorage.setItem('dailyGoal', dailyGoal.toString());
+    localStorage.setItem('sessionsToday', sessionsToday.toString());
+    localStorage.setItem('lastGoalResetDate', lastGoalResetDate);
+  }, [dailyGoal, sessionsToday, lastGoalResetDate, isAuthenticated]);
+
+  // New: Daily Goal Reset Effect
+  useEffect(() => {
+    const today = new Date().toDateString();
+    if (lastGoalResetDate !== today) {
+      // If it's a new day, reset sessionsToday
+      setSessionsToday(0);
+      setLastGoalResetDate(today);
+    }
+  }, [lastGoalResetDate]); // Depend on lastGoalResetDate to trigger check
+
   if (authLoading) {
     return <LoadingScreen />;
   }
@@ -633,7 +694,41 @@ function App() {
         removingIdx={removingIdx}
         isDarkMode={isDarkMode}
         currentStreak={currentStreak}
+        dailyGoal={dailyGoal}
+        sessionsToday={sessionsToday}
       />
+
+      {/* Daily Goal display - Moved outside TodoList */}
+      <div className={`
+        daily-goal-display text-center relative border-4 border-black
+        animate-fadein-left
+        ${isDarkMode ? 'bg-[#1f2937] text-[#d1d5db]' : 'bg-[#f7fee7] text-[#374151]'}
+      `}
+      style={{
+        position: 'fixed',
+        top: '760px', // Adjusted top position to be below the TodoList
+        left: 'max(8px, 3vw)',
+        zIndex: 48, // Z-index below TodoList (49)
+        borderRadius: '0',
+        boxShadow: isDarkMode
+          ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
+          : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
+        padding: '8px 16px',
+        width: 'min(95vw, 300px)', // Match TodoList width
+        minWidth: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
+      }}>
+        <div style={{ fontSize: 'clamp(1rem, 3vw, 1.2rem)', fontWeight: 'bold', letterSpacing: '1px' }}>
+          {sessionsToday} / {dailyGoal}
+        </div>
+        <div style={{ fontSize: 'clamp(0.7rem, 1.5vw, 0.9rem)', marginTop: '2px' }}>
+          Daily Sessions Goal
+        </div>
+      </div>
 
       {/* Badges sliding component at the top right */}
       <Badges
@@ -707,6 +802,8 @@ function App() {
           toggleSettings={toggleSettings}
           playButtonSound={playButtonSound}
           handleLogout={handleLogout}
+          dailyGoal={dailyGoal}
+          setDailyGoal={setDailyGoal}
         />
       </div>
       {/* Render Pokedex only after sprite is loaded */}
