@@ -706,7 +706,7 @@ function App() {
       `}
       style={{
         position: 'fixed',
-        top: '760px', // Adjusted top position to be below the TodoList
+        top: '770px', // Increased top position to bring the daily goal display further down based on the image
         left: 'max(8px, 3vw)',
         zIndex: 48, // Z-index below TodoList (49)
         borderRadius: '0',
