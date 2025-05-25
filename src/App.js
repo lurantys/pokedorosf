@@ -5,17 +5,13 @@ import Badges from './Badges';
 import TodoList from './TodoList';
 import Timer from './Timer';
 import AuthPage from './AuthPage';
-import { auth, firebaseConfig } from './firebase';
+import { auth, db, firebaseConfig, syncUserData, getUserData, updateUserData } from './firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import LoadingScreen from './LoadingScreen';
 import PWAInstallPrompt from './PWAInstallPrompt';
-import { getFirestore } from 'firebase/firestore';
 import { setPersistence, browserLocalPersistence } from 'firebase/auth';
 
 const POKEMON_SPRITES_URL = '/pokemonsprites.json';
-
-// Initialize Firestore
-const db = getFirestore();
 
 // Configure Firebase Auth persistence
 setPersistence(auth, browserLocalPersistence)
@@ -25,31 +21,19 @@ setPersistence(auth, browserLocalPersistence)
 
 function App() {
   // Timer state
-  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
   const [isBreakTime, setIsBreakTime] = useState(false);
   const [originalWorkDuration, setOriginalWorkDuration] = useState(null);
-  const [minutes, setMinutes] = useState(() => {
-    const savedWorkDuration = localStorage.getItem('workDuration');
-    return savedWorkDuration ? parseInt(savedWorkDuration) : 25;
-  });
+  const [minutes, setMinutes] = useState(25);
   const [seconds, setSeconds] = useState(0);
   const [status, setStatus] = useState('Work Time');
   const [pokemonSprites, setPokemonSprites] = useState([]);
   const [currentPokemonInfo, setCurrentPokemonInfo] = useState({ name: '', sprite: '' });
-  const [workDuration, setWorkDuration] = useState(() => {
-    const savedWorkDuration = localStorage.getItem('workDuration');
-    return savedWorkDuration ? parseInt(savedWorkDuration) : 25;
-  });
-  const [shortBreakDuration, setShortBreakDuration] = useState(() => {
-    const savedShortBreak = localStorage.getItem('shortBreakDuration');
-    return savedShortBreak ? parseInt(savedShortBreak) : 5;
-  });
-  const [longBreakDuration, setLongBreakDuration] = useState(() => {
-    const savedLongBreak = localStorage.getItem('longBreakDuration');
-    return savedLongBreak ? parseInt(savedLongBreak) : 10;
-  });
+  const [workDuration, setWorkDuration] = useState(25);
+  const [shortBreakDuration, setShortBreakDuration] = useState(5);
+  const [longBreakDuration, setLongBreakDuration] = useState(10);
   const [showSettings, setShowSettings] = useState(false);
   const [hpPercentage, setHpPercentage] = useState(100);
 
@@ -70,39 +54,21 @@ function App() {
   }, []);
 
   // Todo List state
-  const [todos, setTodos] = useState(() => {
-    const saved = localStorage.getItem('todos');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [todos, setTodos] = useState([]);
   const [todoInput, setTodoInput] = useState('');
   const [removingIdx, setRemovingIdx] = useState(null);
 
   // Track completed work sessions for badges
-  const [completedSessions, setCompletedSessions] = useState(() => {
-    const saved = localStorage.getItem('completedSessions');
-    return saved ? parseInt(saved) : 0;
-  });
+  const [completedSessions, setCompletedSessions] = useState(0);
 
   // Add session count state
-  const [sessionCount, setSessionCount] = useState(() => {
-    const saved = localStorage.getItem('sessionCount');
-    return saved ? parseInt(saved) : 0;
-  });
+  const [sessionCount, setSessionCount] = useState(0);
 
   // Add new state for sound controls
-  const [isMuted, setIsMuted] = useState(() => localStorage.getItem('isMuted') === 'true');
-  const [musicVolume, setMusicVolume] = useState(() => {
-    const saved = localStorage.getItem('musicVolume');
-    return saved ? parseFloat(saved) : 0.1;
-  });
-  const [effectsVolume, setEffectsVolume] = useState(() => {
-    const saved = localStorage.getItem('effectsVolume');
-    return saved ? parseFloat(saved) : 0.5;
-  });
-  const [cryVolume, setCryVolume] = useState(() => {
-    const saved = localStorage.getItem('cryVolume');
-    return saved ? parseFloat(saved) : 0.5;
-  });
+  const [isMuted, setIsMuted] = useState(false);
+  const [musicVolume, setMusicVolume] = useState(0.1);
+  const [effectsVolume, setEffectsVolume] = useState(0.5);
+  const [cryVolume, setCryVolume] = useState(0.5);
 
   // New state for background music, selected once on component initialization
   const [currentBgMusic] = useState(() => {
@@ -116,29 +82,19 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true); // New state for loading
 
   // Add new state for streak tracking
-  const [currentStreak, setCurrentStreak] = useState(() => {
-    const saved = localStorage.getItem('currentStreak');
-    return saved ? parseInt(saved) : 0;
-  });
-  const [lastActiveDate, setLastActiveDate] = useState(() => {
-    const saved = localStorage.getItem('lastActiveDate');
-    return saved ? saved : null;
-  });
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [lastActiveDate, setLastActiveDate] = useState(null);
 
-  // Save settings whenever they change
+  // Remove all localStorage effects
   useEffect(() => {
-    localStorage.setItem('workDuration', workDuration.toString());
-    localStorage.setItem('shortBreakDuration', shortBreakDuration.toString());
-    localStorage.setItem('longBreakDuration', longBreakDuration.toString());
-  }, [workDuration, shortBreakDuration, longBreakDuration]);
-
-  useEffect(() => {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  }, [todos]);
-
-  useEffect(() => {
-    localStorage.setItem('completedSessions', completedSessions.toString());
-  }, [completedSessions]);
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark-mode');
+    }
+  }, [isDarkMode]);
 
   // Calculate owned badges based on completed sessions
   const ownedBadges = Array.from({length: 8}, (_, i) => i + 1).filter(badgeNum => completedSessions >= badgeNum * 10);
@@ -165,17 +121,6 @@ function App() {
       isMounted = false;
     };
   }, []);
-
-  // Set dark mode on mount and update html class
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark-mode');
-    }
-  }, [isDarkMode]);
 
   // Timer logic
   useEffect(() => {
@@ -224,7 +169,6 @@ function App() {
       setCompletedSessions(prev => prev + 1);
       setSessionCount(prev => {
         const newCount = prev + 1;
-        localStorage.setItem('sessionCount', newCount.toString());
         return newCount;
       });
     } else {
@@ -272,25 +216,14 @@ function App() {
   };
 
   const toggleDarkMode = () => {
-    setIsDarkMode(dm => {
-      localStorage.setItem('darkMode', !dm);
-      return !dm;
-    });
+    setIsDarkMode(prev => !prev);
   };
 
   const toggleSettings = () => {
     setShowSettings(!showSettings);
   };
 
-  // Save sound settings whenever they change
-  useEffect(() => {
-    localStorage.setItem('isMuted', isMuted);
-    localStorage.setItem('musicVolume', musicVolume);
-    localStorage.setItem('effectsVolume', effectsVolume);
-    localStorage.setItem('cryVolume', cryVolume);
-  }, [isMuted, musicVolume, effectsVolume, cryVolume]);
-
-  // Effect to handle background music volume and mute state
+  // Remove sound settings localStorage effect
   useEffect(() => {
     const bgMusic = bgMusicRef.current;
     if (!bgMusic) return;
@@ -299,7 +232,6 @@ function App() {
     if (isMuted && !bgMusic.paused) {
       bgMusic.pause(); // Pause if muted and currently playing
     }
-    // Note: Playback is initiated by the first document click listener
   }, [bgMusicRef, isMuted, musicVolume, currentBgMusic]);
 
   const playLevelUpSound = () => {
@@ -497,26 +429,122 @@ function App() {
     });
   };
 
+  // Function to sync all user data with Firebase
+  const syncAllUserData = async (userId) => {
+    if (!userId) return;
+    
+    const userData = {
+      theme: {
+        isDarkMode,
+        workDuration,
+        shortBreakDuration,
+        longBreakDuration
+      },
+      streak: {
+        currentStreak,
+        lastActiveDate
+      },
+      badges: {
+        completedSessions,
+        sessionCount
+      },
+      tasks: todos,
+      sound: {
+        isMuted,
+        musicVolume,
+        effectsVolume,
+        cryVolume
+      }
+    };
+
+    await syncUserData(userId, userData);
+  };
+
+  // Function to load user data from Firebase
+  const loadUserData = async (userId) => {
+    if (!userId) return;
+    
+    const userData = await getUserData(userId);
+    if (!userData) return;
+
+    // Load theme settings
+    if (userData.theme) {
+      setIsDarkMode(userData.theme.isDarkMode);
+      setWorkDuration(userData.theme.workDuration);
+      setShortBreakDuration(userData.theme.shortBreakDuration);
+      setLongBreakDuration(userData.theme.longBreakDuration);
+    }
+
+    // Load streak data
+    if (userData.streak) {
+      setCurrentStreak(userData.streak.currentStreak);
+      setLastActiveDate(userData.streak.lastActiveDate);
+    }
+
+    // Load badges data
+    if (userData.badges) {
+      setCompletedSessions(userData.badges.completedSessions);
+      setSessionCount(userData.badges.sessionCount);
+    }
+
+    // Load tasks
+    if (userData.tasks) {
+      setTodos(userData.tasks);
+    }
+
+    // Load sound settings
+    if (userData.sound) {
+      setIsMuted(userData.sound.isMuted);
+      setMusicVolume(userData.sound.musicVolume);
+      setEffectsVolume(userData.sound.effectsVolume);
+      setCryVolume(userData.sound.cryVolume);
+    }
+  };
+
   // Listen for Firebase Auth state changes
   useEffect(() => {
     let isMounted = true;
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!isMounted) return;
-      console.log('Auth state changed:', user); // Debug log
-      if (user && !user.isAnonymous) { // Only handle non-guest users
+      console.log('Auth state changed:', user);
+      
+      if (user && !user.isAnonymous) {
         setIsAuthenticated(true);
+        // Load user data when authenticated
+        await loadUserData(user.uid);
       } else if (!user && !localStorage.getItem('pokedorosf_guest')) {
         setIsAuthenticated(false);
       }
       setAuthLoading(false);
     });
 
-    // Cleanup subscription
     return () => {
       isMounted = false;
       unsubscribe();
     };
   }, []);
+
+  // Sync data whenever it changes
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (user && !user.isAnonymous) {
+      syncAllUserData(user.uid);
+    }
+  }, [
+    isDarkMode,
+    workDuration,
+    shortBreakDuration,
+    longBreakDuration,
+    currentStreak,
+    lastActiveDate,
+    completedSessions,
+    sessionCount,
+    todos,
+    isMuted,
+    musicVolume,
+    effectsVolume,
+    cryVolume
+  ]);
 
   // Handler for logging out
   const handleLogout = async () => {
@@ -531,36 +559,6 @@ function App() {
       console.error('Error signing out:', error);
     }
   };
-
-  // Update streak on mount
-  useEffect(() => {
-    const today = new Date().toDateString();
-    
-    if (lastActiveDate) {
-      const lastDate = new Date(lastActiveDate);
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      if (lastDate.toDateString() === yesterday.toDateString()) {
-        // If last active was yesterday, increment streak
-        setCurrentStreak(prev => prev + 1);
-      } else if (lastDate.toDateString() !== today) {
-        // If last active was not today or yesterday, reset streak
-        setCurrentStreak(1);
-      }
-    } else {
-      // First time using the app
-      setCurrentStreak(1);
-    }
-    
-    setLastActiveDate(today);
-  }, []);
-
-  // Save streak data whenever it changes
-  useEffect(() => {
-    localStorage.setItem('currentStreak', currentStreak.toString());
-    localStorage.setItem('lastActiveDate', lastActiveDate);
-  }, [currentStreak, lastActiveDate]);
 
   if (authLoading) {
     return <LoadingScreen />;
