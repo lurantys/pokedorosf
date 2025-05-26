@@ -830,7 +830,7 @@ function App() {
         <div className="flex items-center justify-center gap-4">
           <span>@lurantys | sf summer 2025</span>
           <a 
-            href="https://www.buymeacoffee.com/lurantys" 
+            href="https://ko-fi.com/zoroarc" 
             target="_blank" 
             rel="noopener noreferrer"
             className={`
@@ -845,7 +845,7 @@ function App() {
             }}
             onClick={playButtonSound}
           >
-            <img src="https://cdn.buymeacoffee.com/assets/logos/icon-black.png" alt="Buy Me A Coffee" className="h-4 w-4" style={{ objectFit: 'contain' }} />
+            <img src="https://cdn.prod.website-files.com/5c14e387dab576fe667689cf/670f5a01229bf8a18f97a3c1_favion.png" alt="Ko-fi" className="h-4 w-4" style={{ objectFit: 'contain' }} />
             Buy me a PokeBall
           </a>
         </div>
