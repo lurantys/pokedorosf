@@ -841,12 +841,38 @@ function App() {
             style={{
               boxShadow: isDarkMode
                 ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
-                : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
+                : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              msUserSelect: 'none',
+              MozUserSelect: 'none',
+              WebkitTouchCallout: 'none'
             }}
             onClick={playButtonSound}
           >
-            <img src="https://cdn.prod.website-files.com/5c14e387dab576fe667689cf/670f5a01229bf8a18f97a3c1_favion.png" alt="Ko-fi" className="h-4 w-4" style={{ objectFit: 'contain' }} />
-            Buy me a PokeBall
+            <img 
+              src="https://cdn.prod.website-files.com/5c14e387dab576fe667689cf/670f5a01229bf8a18f97a3c1_favion.png" 
+              alt="Ko-fi" 
+              className="h-4 w-4" 
+              style={{ 
+                objectFit: 'contain',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                msUserSelect: 'none',
+                MozUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                pointerEvents: 'none'
+              }} 
+            />
+            <span style={{
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              msUserSelect: 'none',
+              MozUserSelect: 'none',
+              WebkitTouchCallout: 'none'
+            }}>
+              Buy me a PokeBall
+            </span>
           </a>
         </div>
       </footer>
