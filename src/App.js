@@ -827,7 +827,28 @@ function App() {
       )}
       {/* Global footer */}
       <footer className="global-footer animate-fadein-bottom">
-        @lurantys | sf summer 2025
+        <div className="flex items-center justify-center gap-4">
+          <span>@lurantys | sf summer 2025</span>
+          <a 
+            href="https://www.buymeacoffee.com/lurantys" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className={`
+              px-3 py-1 border-2 border-black font-medium transition-transform duration-200 
+              transform hover:-translate-y-0.5 hover:shadow-md flex items-center gap-2
+              ${isDarkMode ? 'bg-gray-600 hover:bg-gray-500 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-900'}
+            `}
+            style={{
+              boxShadow: isDarkMode
+                ? 'inset -4px -4px 0 0 #2F4F4F, inset 4px 4px 0 0 #555555, 0 0 15px rgba(0, 0, 0, 0.4)'
+                : 'inset -4px -4px 0 0 #8FBC8F, inset 4px 4px 0 0 #FFFFFF, 0 0 10px rgba(0, 0, 0, 0.3)'
+            }}
+            onClick={playButtonSound}
+          >
+            <img src="https://cdn.buymeacoffee.com/assets/logos/icon-black.png" alt="Buy Me A Coffee" className="h-4 w-4" style={{ objectFit: 'contain' }} />
+            Buy me a PokeBall
+          </a>
+        </div>
       </footer>
       <audio ref={levelUpSoundRef} src="/audio/levelup.mp3" preload="auto" />
       <audio ref={buttonSoundRef} src="/audio/button.mp3" preload="auto" />
